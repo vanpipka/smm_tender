@@ -1,0 +1,19 @@
+{% load static %}
+<header class="main-header">
+    <div class="header-container">
+        <div class="header-logo">
+            <a href="{% url 'orders:order_list' %}">SMM Tender</a>
+        </div>
+        <nav class="header-nav">
+            <!--<a href="{% url 'orders:order_list' %}">Тендеры</a>-->
+        </nav>
+        <div class="header-user">
+            {% if request.user.is_authenticated %}
+                <span class="username">{{ request.user.username }}</span>
+                <a href="{% url 'logout' %}" class="logout-link">Выйти</a>
+            {% else %}
+                <a href="{% url 'login' %}">Войти</a>
+            {% endif %}
+        </div>
+    </div>
+</header>

@@ -1,0 +1,23 @@
+services:
+  django:
+    build: .
+    container_name: smm_tender
+    restart: unless-stopped
+
+    command: >
+      sh -c "
+      python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      gunicorn antcom.wsgi:application --bind 0.0.0.0:8000
+      "
+
+    volumes:
+      - ./volumes/db:/app/db
+      - ./volumes/media:/app/media
+      - ./volumes/static:/app/staticfiles
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env

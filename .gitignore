@@ -1,0 +1,36 @@
+# Virtual environments
+myvenv/
+venv/
+env/
+
+# nodemodules for JavaScript projects
+node_modules/
+package-lock.json
+
+
+# Django
+*.py[cod]
+__pycache__/
+*.so
+db.sqlite3
+.env
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Media and static files
+media/
+staticfiles/
+config/static/
+volumes/
+
+# Logs
+config/logs/

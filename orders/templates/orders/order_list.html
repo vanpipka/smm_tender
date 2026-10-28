@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Список заказов и тендеров — SMM Tender{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'orders/css/orders.css' %}">
+{% endblock %}
+
+{% block content %}
+        <header class="page-header">
+            <h1>Список тендеров</h1>
+        </header>
+
+        <!-- Форма поиска и фильтрации -->
+        <div class="filter-card">
+            <form method="get" action="{% url 'orders:order_list' %}" class="filter-form">
+                <div class="filter-group">
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Поиск по номеру заявки..." class="filter-input">
+                </div>
+
+                <div class="filter-group">
+                    <select name="status" class="filter-select">
+                        <option value="">Все статусы</option>
+                        <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Активные</option>
+                        <option value="finished" {% if selected_status == 'finished' %}selected{% endif %}>Завершенные</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-filter">Найти</button>
+                
+                {% if search_query or selected_status %}
+                    <a href="{% url 'orders:order_list' %}" class="btn-reset">Сбросить</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="orders-list">
+            {% if orders %}
+                {% for order in orders %}
+                    <div class="order-card">
+                        <a href="{% url 'orders:order_detail' order.id %}" class="stretched-link"></a>
+                        <!-- Левая колонка: Номер и Дата -->
+                        <div class="order-col-left">
+                            <a href="#" class="order-number">№: {{ order.number }}</a>
+                            <span class="order-date">{{ order.date|date:"d.m.Y" }}</span>
+                        </div>
+
+                        <!-- Центральная колонка: Маршрут и детали -->
+                        <div class="order-col-center">
+                            <div class="route-header">
+                                <span class="company-name">{{ order.sender }}</span>
+                                <span class="route-arrow">⟶</span>
+                                <span class="company-name">{{ order.recipient }}</span>
+                            </div>
+
+                            <!-- Блок с пунктами отправления и назначения -->
+                            <div class="route-box">
+                                <div class="route-point">
+                                    <span class="point-label">ПУНКТ ОТПРАВЛЕНИЯ</span>
+                                    <span class="point-value">{{ order.sender_address }}</span>
+                                </div>
+                                <div class="route-point">
+                                    <span class="point-label">ПУНКТ НАЗНАЧЕНИЯ</span>
+                                    <span class="point-value">{{ order.recipient_address }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Дополнительные параметры -->
+                            <div class="order-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">ВЕС ГРУЗА:</span>
+                                    <span class="detail-value">
+                                        {% if order.total_weight %}{{ order.total_weight }} кг.{% else %}--{% endif %}
+                                    </span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">ДАТА ВЫВОЗА:</span>
+                                    <span class="detail-value">
+                                        {% if order.departure_period %}{{ order.departure_period }}{% else %}--{% endif %}
+                                    </span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">ГРУЗЫ:</span>
+                                    <span class="detail-value">
+                                        {% for cargo in order.cargoes.all %}
+                                            {{ cargo.name }}{% if not forloop.last %}, {% endif %}
+                                        {% empty %}
+                                            --
+                                        {% endfor %}
+                                    </span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">СТОИМОСТЬ ГРУЗА:</span>
+                                    <span class="detail-value">
+                                        {% if order.cargo_cost %}{{ order.cargo_cost }} {{ order.cargo_currency }}{% else %}--{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="order-col-right" 
+                            data-order-id="{{ order.id }}"
+                            data-opening-date="{{ order.tender_opening_date|date:'c' }}"
+                            data-end-date="{{ order.tender_ending_date|date:'c' }}">
+                            
+                            <div class="tender-status status-box">Проверка статуса...</div>
+
+                            <div class="bids-info">
+                                <div class="bid-row">
+                                    <span class="bid-label">Базовая цена:</span>
+                                    <span class="bid-val js-initial-price">
+                                        {% if order.initial_price %}{{ order.initial_price }} {{ order.tender_currency }}{% else %}--{% endif %}
+                                    </span>
+                                </div>
+                                
+                                <div class="bid-row">
+                                    <span class="bid-label">Текущая ставка:</span>
+                                    <div class="bid-val-group">
+                                        <span class="js-lowest-bid">{% if order.lowest_bid %}{{ order.lowest_bid }} {{ order.tender_currency }}{% else %}--{% endif %}</span>
+                                        <span class="percent-badge neutral">0%</span>
+                                    </div>
+                                </div>
+
+                                <div class="bid-row">
+                                    <span class="bid-label">Ваша ставка:</span>
+                                    <div class="bid-val-group">
+                                        <span class="js-user-bid">{% if order.user_bid %}{{ order.user_bid }} {{ order.tender_currency }}{% else %}--{% endif %}</span>
+                                        <span class="percent-badge neutral">
+                                            {% if order.user_bid %}учтен{% else %}0%{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-orders">Активных тендеров пока нет.</p>
+            {% endif %}
+        </div>
+        {% if is_paginated %}
+            <nav aria-label="Page navigation" class="d-flex justify-content-end">
+                <ul class="pagination mb-0">
+
+                    {# Кнопка "Назад" #}
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{ query_string }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {# Цикл по страницам #}
+                    {% for num in page_range %}
+                        {% if num == page_obj.paginator.ELLIPSIS %}
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}{{ query_string }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {# Кнопка "Вперед" #}
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{{ query_string }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</body>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const orderCards = document.querySelectorAll(".order-col-right");
+
+        orderCards.forEach(card => {
+            const orderId = card.getAttribute("data-order-id");
+            const openingDateStr = card.getAttribute("data-opening-date");
+            const endDateStr = card.getAttribute("data-end-date");
+            
+            const statusBox = card.querySelector(".tender-status");
+            const lowestBidEl = card.querySelector(".js-lowest-bid");
+            const userBidEl = card.querySelector(".js-user-bid");
+            
+            if (!openingDateStr || !endDateStr) return;
+
+            const openingTime = new Date(openingDateStr).getTime();
+            const endTime = new Date(endDateStr).getTime();
+
+            // Функция форматирования таймера
+            function formatTimeRemaining(distance) {
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                let timeFormat = "";
+                if (days > 0) timeFormat += `${days}д `;
+                timeFormat += `${String(hours).padStart(2, '0')}ч ${String(minutes).padStart(2, '0')}м ${String(seconds).padStart(2, '0')}с`;
+                return timeFormat;
+            }
+
+            // Обновление таймера времени
+            function updateTimer() {
+                const now = new Date().getTime();
+
+                if (now < openingTime) {
+                    const distance = openingTime - now;
+                    statusBox.innerHTML = `До начала: <span class="timer-countdown">${formatTimeRemaining(distance)}</span>`;
+                    statusBox.className = "tender-status status-upcoming";
+                } else if (now >= openingTime && now < endTime) {
+                    const distance = endTime - now;
+                    statusBox.innerHTML = `До окончания: <span class="timer-countdown">${formatTimeRemaining(distance)}</span>`;
+                    statusBox.className = "tender-status status-active";
+                } else {
+                    statusBox.textContent = "Торги завершены";
+                    statusBox.className = "tender-status status-finished";
+                }
+            }
+
+            // Вспомогательная функция для плавной подсветки элемента при изменении текста
+            function updateTextWithHighlight(element, newText) {
+                if (element.textContent !== newText) {
+                    element.textContent = newText;
+                    
+                    // Добавляем класс анимации
+                    element.classList.add('price-updated');
+                    
+                    // Удаляем класс после окончания анимации (1.5 секунды), чтобы можно было запустить повторно
+                    setTimeout(() => {
+                        element.classList.remove('price-updated');
+                    }, 1500);
+                }
+            }
+
+            // Функция получения актуальных цен с сервера
+            function fetchOrderPrices() {
+                fetch(`/orders/api/${orderId}/bids/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const currency = data.currency || 'RUB';
+                        
+                        // Форматируем новые значения
+                        const newLowestText = data.lowest_bid !== null ? `${data.lowest_bid} ${currency}` : '--';
+                        const newUserText = data.user_bid !== null ? `${data.user_bid} ${currency}` : '--';
+
+                        // Обновляем с анимацией (если значение реально изменилось)
+                        updateTextWithHighlight(lowestBidEl, newLowestText);
+                        updateTextWithHighlight(userBidEl, newUserText);
+                    })
+                    .catch(error => console.error('Ошибка при обновлении цен:', error));
+            }
+
+            // Запускаем таймер сразу и каждую секунду
+            updateTimer();
+            setInterval(updateTimer, 1000);
+
+            // Загружаем цены сразу и обновляем каждые 5 секунд
+            fetchOrderPrices();
+            setInterval(fetchOrderPrices, 5000);
+        });
+    });
+</script>
+
+{% endblock %}

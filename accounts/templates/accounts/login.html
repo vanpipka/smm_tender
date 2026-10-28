@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в систему — SMM Tender</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
+</head>
+<body>
+    <div class="login-card">
+        <!-- Левая часть: Форма -->
+        <div class="login-form-section">
+            <div class="form-header">
+                <h2>Добрый день!</h2>
+                <p>Мы рады видеть Вас</p>
+            </div>
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <div class="error-message">
+                        Неверный логин или пароль
+                    </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="id_username">ЛОГИН</label>
+                    <input type="text" name="username" id="id_username" required placeholder="">
+                </div>
+
+                <div class="form-group">
+                    <label for="id_password">ПАРОЛЬ</label>
+                    <div class="password-wrapper">
+                        <input type="password" name="password" id="id_password" required placeholder="">
+                        <button type="button" class="toggle-password" id="togglePassword" aria-label="Показать пароль">
+                            <!-- Иконка перечеркнутого глаза -->
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Войти</button>
+            </form>
+        </div>
+        <div class="login-banner">
+            <div class="banner-overlay"></div>
+            <div class="logo-container">
+                <!-- Замените путь на логотип вашей компании -->
+                <img src="{% static 'accounts/images/logo.svg' %}" alt="Логотип СММ" class="logo-img">
+            </div>
+        </div>
+    </div>
+
+    <!-- Скрипт для показа/скрытия пароля -->
+    <script>
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#id_password');
+
+        togglePassword.addEventListener('click', function () {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+        });
+    </script>
+</body>
+</html>

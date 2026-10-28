@@ -1,0 +1,429 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f6f9;
+    color: #1f2937;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 24px;
+}
+
+.back-link {
+    display: inline-block;
+    color: #007bff;
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.page-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Карточка заказа */
+.order-card {
+    position: relative;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    display: flex;
+    justify-content: space-between;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    border: 1px solid #edf2f7;
+    gap: 30px;
+}
+
+/* Левая колонка */
+.order-col-left {
+    flex: 0 0 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.order-number {
+    font-size: 16px;
+    font-weight: 700;
+    color: #007bff;
+    text-decoration: none;
+    margin-bottom: 6px;
+}
+
+.order-number:hover {
+    text-decoration: underline;
+}
+
+.order-date {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+/* Центральная колонка */
+.order-col-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.route-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 16px;
+}
+
+.company-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.route-arrow {
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+/* Блок маршрута с сероватым фоном */
+.route-box {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid #f1f5f9;
+}
+
+.route-point {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding-left: 18px;
+}
+
+/* Имитация точек маркерного списка на карте */
+.route-point::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.route-point:first-child::before {
+    background-color: #007bff; /* синяя точка отправления */
+}
+
+.route-point:last-child::before {
+    background-color: #00c853; /* зеленая точка назначения */
+}
+
+.point-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.point-value {
+    font-size: 13px;
+    color: #374151;
+}
+
+/* Детали заказа (вес, даты, грузы) */
+.order-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.detail-row {
+    display: flex;
+    font-size: 13px;
+}
+
+.detail-label {
+    width: 150px;
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+.detail-value {
+    color: #1f2937;
+    font-weight: 500;
+}
+
+/* Правая колонка: Статус и торги */
+.order-col-right {
+    flex: 0 0 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.tender-status {
+    background-color: #e2e8f0;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+}
+
+.bids-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bid-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.bid-label {
+    color: #4b5563;
+}
+
+.bid-val {
+    color: #111827;
+    font-weight: 600;
+}
+
+.bid-val-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.percent-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.percent-badge.neutral {
+    background-color: #e6fffa;
+    color: #00b4d8;
+}
+
+.no-orders {
+    text-align: center;
+    color: #6b7280;
+    padding: 40px;
+    background: #fff;
+    border-radius: 12px;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .order-card {
+        flex-direction: column;
+        gap: 20px;
+    }
+    .order-col-right {
+        align-items: flex-start;
+    }
+}
+
+
+/* Pagination */
+.pagination .page-link {
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    margin: 0 3px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.pagination .active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+/* Статус торгов */
+.tender-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+    text-align: center;
+    width: 100%;
+}
+
+/* Если торги завершены */
+.tender-status.status-finished {
+    background-color: #e2e8f0;
+    color: #475569;
+}
+
+/* Если аукцион еще идет (активный) */
+.tender-status.status-active {
+    background-color: #e6fffa;
+    color: #0d9488;
+    border: 1px solid #ccfbf1;
+}
+
+/* Если аукцион еще не начался (ожидание) */
+.tender-status.status-upcoming {
+    background-color: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+.timer-countdown {
+    font-variant-numeric: tabular-nums; /* Чтобы цифры таймера не прыгали при изменении */
+    font-weight: 700;
+}
+
+/* Класс и анимация для подсветки измененной цены */
+@keyframes highlightUpdate {
+    0% {
+        background-color: #d1fae5; /* Нежно-зеленый цвет при обновлении */
+        color: #065f46;
+        transform: scale(1.03);
+    }
+    100% {
+        background-color: transparent;
+        color: inherit;
+        transform: scale(1);
+    }
+}
+
+.price-updated {
+    animation: highlightUpdate 1.5s ease;
+    border-radius: 4px;
+    padding: 2px 4px;
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+/* Панель фильтров и поиска */
+.filter-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    border: 1px solid #edf2f7;
+}
+
+.filter-form {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-input, .filter-select {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background-color: #fff;
+    transition: border-color 0.2s;
+}
+
+.filter-input:focus, .filter-select:focus {
+    border-color: #007bff;
+}
+
+.btn-filter {
+    height: 42px;
+    padding: 0 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-filter:hover {
+    background-color: #0056b3;
+}
+
+.btn-reset {
+    height: 42px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border-radius: 8px;
+    font-size: 14px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.btn-reset:hover {
+    background-color: #e5e7eb;
+}
+
+/* Стили таймлайна маршрута */
+.route-timeline {
+    position: relative;
+    padding-left: 10px;
+}
+
+.timeline-item {
+    position: relative;
+}
+
+.timeline-marker {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #0d6efd;
+}
+
+.stretched-link::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1; /* Растягивает кликабельную зону на весь .card */
+}
