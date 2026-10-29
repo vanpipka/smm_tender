@@ -35,3 +35,22 @@ class OrderSerializer(serializers.ModelSerializer):
             Cargo.objects.create(order=order, **cargo_data)
             
         return order
+
+    def update(self, instance, validated_data):
+        # Извлекаем данные грузов, если они переданы в запросе
+        cargoes_data = validated_data.pop('cargoes', None)
+
+        # 1. Обновляем основные поля заказа
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # 2. Обрабатываем вложенные грузы (если они переданы)
+        if cargoes_data is not None:
+            # Стратегия: простой и надежный подход — удалить старые грузы и создать переданные заново.
+            # (Либо можно обновлять по ID, если это критично для вашей бизнес-логики)
+            instance.cargoes.all().delete()
+            for cargo_data in cargoes_data:
+                Cargo.objects.create(order=instance, **cargo_data)
+
+        return instance
