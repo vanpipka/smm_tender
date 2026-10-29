@@ -17,7 +17,7 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'number', 'date', 'recipient', 'recipient_address',
             'sender', 'sender_address', 'initial_price', 'price_step',
-            'tender_opening_date', 'time_to_end',
+            'tender_opening_date', 'time_to_end', 'tender_ending_date',
             'arrivals_custom', 'departures_custom', 'cargo_cost',
             'cargo_currency', 'tender_currency', 'arrival_period',
             'departure_period', 'deleted', 'total_weight', 'cargoes'
