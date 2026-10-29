@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from datetime import timedelta
 from django.shortcuts import get_object_or_404, redirect
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 from .serializers import OrderSerializer
 from .models import Order, Bid
 from .forms import BidForm
@@ -175,4 +175,4 @@ def order_bids_api(request, pk):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.filter(deleted=False).prefetch_related('cargoes')
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
