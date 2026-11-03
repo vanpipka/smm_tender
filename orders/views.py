@@ -207,14 +207,31 @@ class RawFileUploadView(APIView):
         # Определяем расширение файла на основе Content-Type
         content_type = request.META.get('CONTENT_TYPE', '').lower()
         
-        if 'pdf' in content_type:
-            ext = 'pdf'
-        elif 'png' in content_type:
-            ext = 'png'
-        elif 'jpeg' in content_type or 'jpg' in content_type:
-            ext = 'jpg'
-        else:
-            ext = 'bin' # Универсальный fallback для неизвестных типов
+        mime_mapping = {
+            'pdf': 'pdf',
+            'png': 'png',
+            'jpeg': 'jpg',
+            'jpg': 'jpg',
+            'sheet': 'xlsx',      # Для формата .xlsx (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)
+            'excel': 'xls',       # Для формата .xls (application/vnd.ms-excel)
+            'ms-excel': 'xls',    # Дополнительный вариант для .xls
+            'csv': 'csv',         # Если вдруг прилетит CSV
+            'zip': 'zip',         # Для zip-архивов
+            'txt': 'txt',         # Для текстовых файлов
+            'json': 'json',       # Для JSON-файлов
+            'xml': 'xml',         # Для XML-файлов
+            'html': 'html',       # Для HTML-файлов
+            'doc': 'doc',         # Для старых Word-документов
+            'docx': 'docx',       # Для новых Word-документов
+            
+        }
+
+        # Ищем совпадение по ключевому слову в content_type
+        ext = 'bin' # Универсальный fallback по умолчанию
+        for keyword, extension in mime_mapping.items():
+            if keyword in content_type:
+                ext = extension
+                break
             
         # Генерируем уникальное имя файла
         filename = f"order_{order.number}_{uuid.uuid4().hex[:8]}.{ext}"
