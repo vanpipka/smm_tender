@@ -247,7 +247,7 @@
 
             // Функция получения актуальных цен с сервера
             function fetchOrderPrices() {
-                fetch(`/orders/api/${orderId}/bids/`)
+                fetch(`/api/${orderId}/bids/`)
                     .then(response => response.json())
                     .then(data => {
                         const currency = data.currency || 'RUB';

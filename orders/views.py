@@ -157,7 +157,6 @@ class OrderDetailView(DetailView):
         return self.render_to_response(context)
 
 
-@login_required
 def order_bids_api(request, pk):
     """API-эндпоинт для получения актуальных ставок по заказу"""
     order = get_object_or_404(Order, pk=pk, deleted=False)
