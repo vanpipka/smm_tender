@@ -2,17 +2,13 @@
 
 {% load static %}
 
-{% block title %}Список заказов и тендеров — SMM Tender{% endblock %}
+{% block title %}Список заказов и тендеров — SMM Transport{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'orders/css/orders.css' %}">
 {% endblock %}
 
 {% block content %}
-        <header class="page-header">
-            <h1>Список тендеров</h1>
-        </header>
-
         <!-- Форма поиска и фильтрации -->
         <div class="filter-card">
             <form method="get" action="{% url 'orders:order_list' %}" class="filter-form">
