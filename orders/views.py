@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.core.files.base import ContentFile
 from django.db.models import Min, OuterRef, Subquery
 from django.db import models
 from django.contrib import messages
@@ -7,8 +8,11 @@ from django.utils import timezone
 from django.views.generic import ListView, DetailView
 from django.http import JsonResponse
 from datetime import timedelta
+import uuid
 from django.shortcuts import get_object_or_404, redirect
-from rest_framework import viewsets, generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAdminUser
 from .serializers import OrderFileSerializer, OrderSerializer
 from .models import Order, Bid, OrderFile
@@ -181,14 +185,44 @@ class OrderViewSet(viewsets.ModelViewSet):
 class OrderFileListCreateView(generics.ListCreateAPIView):
     serializer_class = OrderFileSerializer
     permission_classes = [IsAdminUser] # Или ваши права доступа (например, IsAdminUser)
+    http_method_names = ['get']
 
     def get_queryset(self):
         # Возвращаем файлы только для конкретного заказа из URL
         order_id = self.kwargs.get('pk')
         return OrderFile.objects.filter(order_id=order_id)
 
-    def perform_create(self, serializer):
-        # Автоматически привязываем файл к заказу по ID из URL
-        order_id = self.kwargs.get('pk')
-        order = get_object_or_404(Order, pk=order_id)
-        serializer.save(order=order)
+
+class RawFileUploadView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, pk):
+        order = get_object_or_404(Order, pk=pk)
+        
+        # Получаем бинарные данные из тела запроса (raw body)
+        file_bytes = request.body
+        if not file_bytes:
+            return Response({"error": "Тело запроса пустое (нет бинарных данных)"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Определяем расширение файла на основе Content-Type
+        content_type = request.META.get('CONTENT_TYPE', '').lower()
+        
+        if 'pdf' in content_type:
+            ext = 'pdf'
+        elif 'png' in content_type:
+            ext = 'png'
+        elif 'jpeg' in content_type or 'jpg' in content_type:
+            ext = 'jpg'
+        else:
+            ext = 'bin' # Универсальный fallback для неизвестных типов
+            
+        # Генерируем уникальное имя файла
+        filename = f"order_{order.number}_{uuid.uuid4().hex[:8]}.{ext}"
+        
+        # Создаем запись в базе и сохраняем бинарный контент через ContentFile
+        order_file = OrderFile(order=order, name=filename)
+        order_file.file.save(filename, ContentFile(file_bytes), save=True)
+        
+        # Возвращаем результат
+        serializer = OrderFileSerializer(order_file)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
