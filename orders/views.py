@@ -220,10 +220,8 @@ class RawFileUploadView(APIView):
             'txt': 'txt',         # Для текстовых файлов
             'json': 'json',       # Для JSON-файлов
             'xml': 'xml',         # Для XML-файлов
-            'html': 'html',       # Для HTML-файлов
             'doc': 'doc',         # Для старых Word-документов
             'docx': 'docx',       # Для новых Word-документов
-            
         }
 
         # Ищем совпадение по ключевому слову в content_type
