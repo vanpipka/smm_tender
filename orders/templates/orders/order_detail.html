@@ -224,7 +224,21 @@
 
         <!-- Таб 2: Файлы -->
         <div class="tab-pane fade" id="files-pane" role="tabpanel">
-            <p class="text-muted p-3 mb-0">Прикрепленные файлы отсутствуют.</p>
+            {% if order.files.all %}
+                <ul class="list-group list-group-flush">
+                    {% for file_item in order.files.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <a href="{{ file_item.file.url }}" target="_blank" class="text-decoration-none">
+                                <i class="bi bi-file-earmark-text me-2"></i>
+                                {{ file_item.name|default:file_item.file.name }}
+                            </a>
+                            <span class="text-muted small">{{ file_item.uploaded_at|date:"d.m.Y H:i" }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">К этому заказу пока не прикреплено ни одного файла.</p>
+            {% endif %}
         </div>
     </div>
 </div>

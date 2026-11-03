@@ -99,8 +99,8 @@ class OrderDetailView(DetailView):
         return Order.objects.filter(deleted=False).annotate(
             lowest_bid=Min('bids__amount'),
             user_bid=Subquery(user_bid_subquery)
-        )
-
+        ).prefetch_related('files', 'cargoes')
+    
     def get_context_data(self, **kwargs):
 
         context = super().get_context_data(**kwargs)
