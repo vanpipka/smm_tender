@@ -112,3 +112,23 @@ class Bid(models.Model):
 
     def __str__(self):
         return f"Ставка {self.amount} от {self.client.username} на заказ №{self.order.number}"
+    
+
+class OrderFile(models.Model):
+    order = models.ForeignKey(
+        Order, 
+        on_delete=models.CASCADE, 
+        related_name='files', 
+        verbose_name="Заказ"
+    )
+    file = models.FileField(upload_to='order_files/%Y/%m/%d/', verbose_name="Файл")
+    name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Имя файла")
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата загрузки")
+
+    class Meta:
+        verbose_name = "Файл заказа"
+        verbose_name_plural = "Файлы заказов"
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return self.name or f"Файл к заказу №{self.order.number}"

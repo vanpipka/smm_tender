@@ -1,5 +1,13 @@
 from rest_framework import serializers
-from .models import Order, Cargo
+from .models import Order, Cargo, OrderFile
+
+
+class OrderFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderFile
+        fields = ['id', 'file', 'name', 'uploaded_at']
+        read_only_fields = ['id', 'uploaded_at']
+
 
 class CargoSerializer(serializers.ModelSerializer):
     class Meta:

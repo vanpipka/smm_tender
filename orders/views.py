@@ -8,10 +8,10 @@ from django.views.generic import ListView, DetailView
 from django.http import JsonResponse
 from datetime import timedelta
 from django.shortcuts import get_object_or_404, redirect
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAdminUser
-from .serializers import OrderSerializer
-from .models import Order, Bid
+from .serializers import OrderFileSerializer, OrderSerializer
+from .models import Order, Bid, OrderFile
 from .forms import BidForm
 
 
@@ -176,3 +176,19 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.filter(deleted=False).prefetch_related('cargoes')
     serializer_class = OrderSerializer
     permission_classes = [IsAdminUser]
+
+
+class OrderFileListCreateView(generics.ListCreateAPIView):
+    serializer_class = OrderFileSerializer
+    permission_classes = [IsAdminUser] # Или ваши права доступа (например, IsAdminUser)
+
+    def get_queryset(self):
+        # Возвращаем файлы только для конкретного заказа из URL
+        order_id = self.kwargs.get('pk')
+        return OrderFile.objects.filter(order_id=order_id)
+
+    def perform_create(self, serializer):
+        # Автоматически привязываем файл к заказу по ID из URL
+        order_id = self.kwargs.get('pk')
+        order = get_object_or_404(Order, pk=order_id)
+        serializer.save(order=order)
