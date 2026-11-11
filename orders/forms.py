@@ -17,6 +17,7 @@ class BidForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.order = kwargs.pop('order', None)
+        super().__init__(*args, **kwargs)
         
         # Динамически задаем шаг на основе атрибута заказа (например, step_size)
         if self.order and hasattr(self.order, 'price_step'):
@@ -24,8 +25,6 @@ class BidForm(forms.ModelForm):
         else:
             # Значение по умолчанию, если у заказа нет такого поля
             self.fields['amount'].widget.attrs['step'] = '1.00'
-
-        super().__init__(*args, **kwargs)
 
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
