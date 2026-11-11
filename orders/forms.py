@@ -12,7 +12,6 @@ class BidForm(forms.ModelForm):
             'amount': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Введите сумму ставки',
-                'min': '0',
             })
         }
 
