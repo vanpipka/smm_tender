@@ -78,3 +78,16 @@
     margin: 0 auto;
     padding: 0 20px;
 }
+
+/*скрытие стрелок в инпуте ввода ставок*/
+/* Для Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Для Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}

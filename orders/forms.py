@@ -20,11 +20,11 @@ class BidForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # Динамически задаем шаг на основе атрибута заказа (например, step_size)
-        if self.order and hasattr(self.order, 'price_step'):
-            self.fields['amount'].widget.attrs['step'] = self.order.price_step
-        else:
-            # Значение по умолчанию, если у заказа нет такого поля
-            self.fields['amount'].widget.attrs['step'] = '1.00'
+        #if self.order and hasattr(self.order, 'price_step'):
+        #    self.fields['amount'].widget.attrs['step'] = self.order.price_step
+        #else:
+        #    # Значение по умолчанию, если у заказа нет такого поля
+        #    self.fields['amount'].widget.attrs['step'] = '1.00'
 
     def clean_amount(self):
         amount = self.cleaned_data.get('amount')
