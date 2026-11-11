@@ -12,13 +12,14 @@ class BidForm(forms.ModelForm):
             'amount': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Введите сумму ставки',
+                'min': '0',
             })
         }
 
     def __init__(self, *args, **kwargs):
         self.order = kwargs.pop('order', None)
         super().__init__(*args, **kwargs)
-        
+
         # Динамически задаем шаг на основе атрибута заказа (например, step_size)
         if self.order and hasattr(self.order, 'price_step'):
             self.fields['amount'].widget.attrs['step'] = self.order.price_step
@@ -31,11 +32,15 @@ class BidForm(forms.ModelForm):
         if not self.order:
             return amount
 
-        now = timezone.now()
+        # Защита от отрицательных значений (и нуля, если сумма должна быть строго больше 0)
+        if amount is not None and amount < 0:
+            raise forms.ValidationError("Сумма ставки не может быть отрицательной.")
 
         # 1. Проверка, что торги находятся в активной фазе
         if not (self.order.tender_opening_date and self.order.tender_ending_date):
             raise forms.ValidationError("Сроки проведения торгов не установлены.")
+        
+        now = timezone.now()
         
         if now < self.order.tender_opening_date:
             raise forms.ValidationError("Торги еще не начались.")
