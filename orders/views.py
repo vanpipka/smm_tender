@@ -5,6 +5,7 @@ from django.db.models import Min, OuterRef, Subquery
 from django.db import models
 from django.contrib import messages
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime, parse_date
 from django.views.generic import ListView, DetailView
 from django.http import JsonResponse
 from datetime import timedelta
@@ -14,6 +15,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAdminUser
+from rest_framework.decorators import api_view, permission_classes
 from .serializers import OrderFileSerializer, OrderSerializer
 from .models import Order, Bid, OrderFile
 from .forms import BidForm
@@ -173,6 +175,44 @@ def order_bids_api(request, pk):
         'user_bid': float(user_bid) if user_bid else None,
         'currency': order.tender_currency,
     })
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser]) # Доступ только для авторизованных админов (is_staff=True)
+def admin_bids_list(request):
+    # Получаем параметр date_from из GET-запроса (например: /api/bids/?date_from=2026-06-01)
+    date_from_str = request.GET.get('date_from')
+    
+    bids = Bid.objects.select_related('client', 'order').all()
+
+    if date_from_str:
+        # Пытаемся распарсить как дату со временем или просто дату
+        parsed_date = parse_datetime(date_from_str)
+        if not parsed_date:
+            parsed_date = parse_date(date_from_str)
+            
+        if parsed_date:
+            # Фильтруем ставки, созданные начиная с указанной даты
+            bids = bids.filter(created_at__gte=parsed_date)
+        else:
+            return Response(
+                {"error": "Неверный формат даты. Используйте YYYY-MM-DD или YYYY-MM-DDTHH:MM:SS"}, 
+                status=400
+            )
+
+    # Ручная сериализация данных в список словарей для JSON
+    data = [
+        {
+            "id": bid.id,
+            "client": bid.client.username,
+            "order_id": bid.order.id,
+            "amount": str(bid.amount), # DecimalField безопаснее переводить в строку для JSON
+            "created_at": bid.created_at.isoformat(),
+        }
+        for bid in bids
+    ]
+
+    return Response(data)
 
 
 class OrderViewSet(viewsets.ModelViewSet):

@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import OrderFileListCreateView, OrderListView, OrderDetailView, RawFileUploadView, order_bids_api, OrderViewSet
+from .views import OrderFileListCreateView, OrderListView, OrderDetailView, RawFileUploadView, admin_bids_list, order_bids_api, OrderViewSet
 
 app_name = 'orders'
 
@@ -15,7 +15,8 @@ urlpatterns = [
     
     path('api/orders/<int:pk>/files/upload/', RawFileUploadView.as_view(), name='order-upload-raw'),
     path('api/orders/<int:pk>/files/', OrderFileListCreateView.as_view(), name='order-files'),
-    
+    path('api/bids/', admin_bids_list, name='admin-bids-list'),
+
     # Подключаем роутер DRF API
     path('', include(router.urls)),
 ]
