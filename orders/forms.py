@@ -11,12 +11,20 @@ class BidForm(forms.ModelForm):
         widgets = {
             'amount': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Введите сумму ставки'
+                'placeholder': 'Введите сумму ставки',
             })
         }
 
     def __init__(self, *args, **kwargs):
         self.order = kwargs.pop('order', None)
+        
+        # Динамически задаем шаг на основе атрибута заказа (например, step_size)
+        if self.order and hasattr(self.order, 'step_size'):
+            self.fields['amount'].widget.attrs['step'] = self.order.step_size
+        else:
+            # Значение по умолчанию, если у заказа нет такого поля
+            self.fields['amount'].widget.attrs['step'] = '1.00'
+
         super().__init__(*args, **kwargs)
 
     def clean_amount(self):
