@@ -180,7 +180,7 @@ def order_bids_api(request, pk):
 @api_view(['GET'])
 @permission_classes([IsAdminUser]) # Доступ только для авторизованных админов (is_staff=True)
 def admin_bids_list(request):
-    # Получаем параметр date_from из GET-запроса (например: /api/bids/?date_from=2026-06-01)
+    # Получаем параметр date_from из GET-запроса (например: /api/bids/?date_from=2026-06-01T00:00:00)
     date_from_str = request.GET.get('date_from')
     
     bids = Bid.objects.select_related('client', 'order').all()
@@ -204,7 +204,7 @@ def admin_bids_list(request):
     data = [
         {
             "id": bid.id,
-            "client": bid.client.username,
+            "client": bid.client.id,
             "order_id": bid.order.id,
             "amount": str(bid.amount), # DecimalField безопаснее переводить в строку для JSON
             "created_at": bid.created_at.isoformat(),
