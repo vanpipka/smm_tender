@@ -204,7 +204,7 @@ def admin_bids_list(request):
     data = [
         {
             "id": bid.id,
-            "client": bid.client.id,
+            "client_id": bid.client.id,
             "order_id": bid.order.id,
             "amount": str(bid.amount), # DecimalField безопаснее переводить в строку для JSON
             "created_at": bid.created_at.isoformat(),
