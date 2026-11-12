@@ -183,7 +183,7 @@ def admin_bids_list(request):
     # Получаем параметр date_from из GET-запроса (например: /api/bids/?date_from=2026-06-01T00:00:00)
     date_from_str = request.GET.get('date_from')
     
-    bids = Bid.objects.select_related('client', 'order').all()
+    bids = Bid.objects.select_related('client', 'order').all().order_by('created_at')
 
     if date_from_str:
         # Пытаемся распарсить как дату со временем или просто дату
