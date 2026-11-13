@@ -147,19 +147,33 @@
                 </div>
 
                 <!-- Промежуточные точки (заглушки как на макете, если понадобятся) -->
+                {% if order.arrivals_custom %}
+                    <div class="timeline-item d-flex align-items-start mb-4 text-muted">
+                        <div class="timeline-marker bg-secondary rounded-circle mt-1 me-3 opacity-50"></div>
+                        <div>
+                            <span class="fw-semibold text-dark d-block mb-1">Промежуточные точки</span>
+                            <p class="small mb-0">
+                                {{ order.arrivals_custom }}
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if order.departures_custom %}
                 <div class="timeline-item d-flex align-items-start mb-4 text-muted">
                     <div class="timeline-marker bg-secondary rounded-circle mt-1 me-3 opacity-50"></div>
                     <div>
                         <span class="fw-semibold text-dark d-block mb-1">Пункт ТО в стране отправления</span>
-                        <p class="small mb-0">не требуется</p>
+                        <p class="small mb-0">{{ order.departures_custom }}</p>
                     </div>
                 </div>
+                {% endif %}
 
                 <div class="timeline-item d-flex align-items-start mb-4 text-muted">
                     <div class="timeline-marker bg-secondary rounded-circle mt-1 me-3 opacity-50"></div>
                     <div>
                         <span class="fw-semibold text-dark d-block mb-1">Пункт ТО в стране назначения</span>
-                        <p class="small mb-0">не требуется</p>
+                        <p class="small mb-0">{{ order.arrivals_custom }}</p>
                     </div>
                 </div>
 
