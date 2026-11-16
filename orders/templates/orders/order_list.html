@@ -55,14 +55,22 @@
                             <div class="route-box">
                                 <div class="route-point">
                                     <span class="point-label">ПУНКТ ОТПРАВЛЕНИЯ</span>
-                                    <span class="point-value">{{ order.sender_address }}</span>
-                                    {% if order.departure_period %}
-                                        <span class="badge bg-light text-dark border small">{{ order.departure_period }}</span>
-                                    {% endif %}
+                                    <div class=" align-items-center gap-2 mb-1"></div>
+                                        <span class="point-value">{{ order.sender_address }}</span>
+                                        {% if order.departure_period %}
+                                            <span class="badge bg-light text-dark border small">{{ order.departure_period }}</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 <div class="route-point">
                                     <span class="point-label">ПУНКТ НАЗНАЧЕНИЯ</span>
-                                    <span class="point-value">{{ order.recipient_address }}</span>
+
+                                    <div class=" align-items-center gap-2 mb-1">
+                                        <span class="point-value">{{ order.recipient_address }}</span>
+                                        {% if order.arrival_period %}
+                                            <span class="badge bg-light text-dark border small">{{ order.arrival_period }}</span>
+                                        {% endif %}
+                                    </div>
                                     {% if order.arrival_period %}
                                         <span class="badge bg-light text-dark border small">{{ order.arrival_period }}</span>
                                     {% endif %}
@@ -71,7 +79,7 @@
 
                             <!-- Дополнительные параметры -->
                             <div class="order-details">
-                                <div class="detail-row">
+                                <div class="detail-row d-flex"></div>">
                                     <span class="detail-label">ВЕС ГРУЗА:</span>
                                     <span class="detail-value js-price">
                                         {% if order.total_weight %}{{ order.total_weight }} кг.{% else %}--{% endif %}
