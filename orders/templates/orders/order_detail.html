@@ -175,6 +175,9 @@
                     <div>
                         <div class="d-flex align-items-center gap-2 mb-1">
                             <span class="fw-bold">{{ order.recipient }}</span>
+                            {% if order.arrival_period %}
+                                <span class="badge bg-light text-dark border small">{{ order.arrival_period }}</span>
+                            {% endif %}
                         </div>
                         <p class="text-muted mb-0 small">{{ order.recipient_address }}</p>
                     </div>
