@@ -26,7 +26,7 @@ class OrderListView(ListView):
     model = Order
     template_name = 'orders/order_list.html'
     context_object_name = 'orders'
-    paginate_by = 2  # Пагинация по 10 заказов на страницу (опционально)
+    paginate_by = 10  # Пагинация по 10 заказов на страницу (опционально)
 
     def get_queryset(self):
         user = self.request.user
