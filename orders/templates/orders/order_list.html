@@ -79,16 +79,10 @@
 
                             <!-- Дополнительные параметры -->
                             <div class="order-details">
-                                <div class="detail-row d-flex"></div>">
+                                <div class="detail-row"></div>
                                     <span class="detail-label">ВЕС ГРУЗА:</span>
                                     <span class="detail-value js-price">
                                         {% if order.total_weight %}{{ order.total_weight }} кг.{% else %}--{% endif %}
-                                    </span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">ДАТА ВЫВОЗА:</span>
-                                    <span class="detail-value">
-                                        {% if order.departure_period %}{{ order.departure_period }}{% else %}--{% endif %}
                                     </span>
                                 </div>
                                 <div class="detail-row">
