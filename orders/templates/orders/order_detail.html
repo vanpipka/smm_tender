@@ -310,17 +310,24 @@
                 .then(data => {
                     const currency = data.currency || 'RUB';
                     if (data.lowest_bid !== null) {
-                        const newText = `${data.lowest_bid} ${currency}`;
+                        const formattedBid = formatPrice(data.lowest_bid);
+                        const newText = `${formattedBid} ${currency}`;
                         if (lowestBidEl.textContent.trim() !== newText) {
                             lowestBidEl.textContent = newText;
                             lowestBidEl.classList.add('text-success');
                             setTimeout(() => lowestBidEl.classList.remove('text-success'), 1500);
                         }
                     } else {
-                        lowestBidEl.textContent = `0 ${currency}`;
+                        lowestBidEl.textContent = `0,00 ${currency}`;
                     }
                 })
                 .catch(err => console.error(err));
+        }
+    
+        function formatPrice(value) {
+            const num = Number(value);
+            if (Number.isNaN(num)) return value;
+            return num.toFixed(2).replace('.', ',');
         }
 
         updateTimer();
@@ -329,5 +336,6 @@
         fetchPrices();
         setInterval(fetchPrices, 5000);
     });
+
 </script>
 {% endblock %}
