@@ -271,8 +271,8 @@
                         const currency = data.currency || 'RUB';
                         
                         // Форматируем новые значения
-                        const newLowestText = data.lowest_bid !== null ? `${data.lowest_bid} ${currency}` : '--';
-                        const newUserText = data.user_bid !== null ? `${data.user_bid} ${currency}` : '--';
+                        const newLowestText = data.lowest_bid !== null ? `${formatPrice(data.lowest_bid)} ${currency}` : '--';
+                        const newUserText = data.user_bid !== null ? `${formatPrice(data.user_bid)} ${currency}` : '--';
 
                         // Обновляем с анимацией (если значение реально изменилось)
                         updateTextWithHighlight(lowestBidEl, newLowestText);
