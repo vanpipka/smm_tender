@@ -36,7 +36,7 @@
             <div class="row g-3">
                 <div class="col-md-4">
                     <span class="text-muted d-block small uppercase">ТЕКУЩАЯ СТАВКА!:</span>
-                    <span class="fs-4 fw-bold text-dark js-lowest-bid">
+                    <span class="fs-4 fw-bold text-dark js-lowest-bid js-price">
                         {% if order.lowest_bid is not None %}
                             {{ order.lowest_bid|floatformat:2 }} {{ order.tender_currency }}
                         {% else %}
@@ -46,13 +46,13 @@
                 </div>
                 <div class="col-md-4">
                     <span class="text-muted d-block small uppercase">БАЗОВАЯ ЦЕНА:</span>
-                    <span class="fs-4 fw-bold text-dark">
+                    <span class="fs-4 fw-bold text-dark js-price">
                         {% if order.initial_price %}{{ order.initial_price }} {{ order.tender_currency }}{% else %}--{% endif %}
                     </span>
                 </div>
                 <div class="col-md-4">
                     <span class="text-muted d-block small uppercase">ШАГ ЦЕНЫ:</span>
-                    <span class="fs-4 fw-bold text-secondary">
+                    <span class="fs-4 fw-bold text-secondary js-price">
                         {{ order.price_step }} {{ order.tender_currency }}
                     </span>
                 </div>
@@ -109,7 +109,7 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <p class="text-muted mb-1 small">Стоимость груза</p>
-                    <p class="fw-semibold fs-5 mb-3">
+                    <p class="fw-semibold fs-5 mb-3 js-price">
                         {% if order.cargo_cost %}{{ order.cargo_cost }} {{ order.cargo_currency }}{% else %}--{% endif %}
                     </p>
 
@@ -275,6 +275,20 @@
         const openingTime = new Date(openingDateStr).getTime();
         const endTime = new Date(endDateStr).getTime();
 
+        // 1. Форматируем все статические цены при загрузке страницы
+        detailCard.querySelectorAll(".js-price").forEach(el => {
+            const text = el.textContent.trim();
+            if (!text || text === "--") return;
+
+            // Отделяем число от валюты (например, "200000,00" и "руб.")
+            const match = text.match(/^([\d\s.,]+)\s*(.*)$/);
+            if (match) {
+                const formattedNum = formatPrice(match[1]);
+                const currency = match[2];
+                el.textContent = currency ? `${formattedNum} ${currency}` : formattedNum;
+            }
+        });
+
         function formatTimeRemaining(distance) {
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -310,15 +324,14 @@
                 .then(data => {
                     const currency = data.currency || 'RUB';
                     if (data.lowest_bid !== null) {
-                        const formattedBid = formatPrice(data.lowest_bid);
-                        const newText = `${formattedBid} ${currency}`;
+                        const newText = `${formatPrice(data.lowest_bid)} ${currency}`;
                         if (lowestBidEl.textContent.trim() !== newText) {
                             lowestBidEl.textContent = newText;
                             lowestBidEl.classList.add('text-success');
                             setTimeout(() => lowestBidEl.classList.remove('text-success'), 1500);
                         }
                     } else {
-                        lowestBidEl.textContent = `0,00 ${currency}`;
+                        lowestBidEl.textContent = `${formatPrice(0)} ${currency}`;
                     }
                 })
                 .catch(err => console.error(err));
