@@ -260,8 +260,14 @@
 {% block extra_js %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        
         const detailCard = document.getElementById("tender-card-detail");
         if (!detailCard) return;
+
+        const priceFormatter = new Intl.NumberFormat('ru-RU', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
 
         const orderId = detailCard.getAttribute("data-order-id");
         const openingDateStr = detailCard.getAttribute("data-opening-date");
@@ -336,11 +342,11 @@
                 })
                 .catch(err => console.error(err));
         }
-    
+
         function formatPrice(value) {
-            const num = Number(value);
+            const num = Number(String(value).replace(/\s+/g, '').replace(',', '.'));
             if (Number.isNaN(num)) return value;
-            return num.toFixed(2).replace('.', ',');
+            return priceFormatter.format(num);
         }
 
         updateTimer();
