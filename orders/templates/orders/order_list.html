@@ -65,15 +65,12 @@
                                 <div class="route-point">
                                     <span class="point-label">ПУНКТ НАЗНАЧЕНИЯ</span>
 
-                                    <div class=" align-items-center gap-2 mb-1">
+                                    <div class="align-items-center gap-2 mb-1">
                                         <span class="point-value">{{ order.recipient_address }}</span>
                                         {% if order.arrival_period %}
                                             <span class="badge bg-light text-dark border small">{{ order.arrival_period }}</span>
                                         {% endif %}
                                     </div>
-                                    {% if order.arrival_period %}
-                                        <span class="badge bg-light text-dark border small">{{ order.arrival_period }}</span>
-                                    {% endif %}
                                 </div>
                             </div>
 
