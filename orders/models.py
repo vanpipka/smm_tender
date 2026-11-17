@@ -44,10 +44,10 @@ class Order(models.Model):
 
     @property
     def calculated_end_date(self):
-        if not self.tender_opening_date or self.timetoend is None:
+        if not self.tender_opening_date or self.time_to_end is None:
             return self.tender_ending_date
 
-        delta = timedelta(minutes=self.timetoend)
+        delta = timedelta(minutes=self.time_to_end)
         last_bid = self.bids.order_by('-created_at').first()
 
         base_date = self.tender_opening_date
