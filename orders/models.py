@@ -44,18 +44,17 @@ class Order(models.Model):
 
     @property
     def calculated_end_date(self):
-        if not self.tender_opening_date or not self.time_to_end:
+        if not self.tender_opening_date or self.timetoend is None:
             return self.tender_ending_date
 
-        # Получаем последнюю ставку (замените bids на ваше related_name для ставок)
+        delta = timedelta(minutes=self.timetoend)
         last_bid = self.bids.order_by('-created_at').first()
 
-        # Если time_to_end — это DurationField:
-        delta = timedelta(minutes=self.time_to_end)
+        base_date = self.tender_opening_date
+        if last_bid and last_bid.created_at:
+            base_date = max(base_date, last_bid.created_at)
 
-        if last_bid:
-            return last_bid.created_at + delta
-        return self.tender_opening_date + delta
+        return base_date + delta
     
     class Meta:
         verbose_name = "Заказ / Тендер"
