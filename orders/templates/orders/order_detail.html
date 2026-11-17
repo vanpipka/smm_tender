@@ -430,7 +430,6 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
-        const bidOwnerBadgeEl = document.getElementById("current-bid-owner-badge");
         const detailCard = document.getElementById("tender-card-detail");
 
         if (!detailCard) return;
@@ -458,6 +457,8 @@
             return priceFormatter.format(num);
         }
 
+        const bidOwnerBadgeEl = document.getElementById("current-bid-owner-badge");
+        
         const orderId = detailCard.getAttribute("data-order-id");
         const openingDateStr = detailCard.getAttribute("data-opening-date");
         const endDateStr = detailCard.getAttribute("data-end-date");
@@ -531,8 +532,8 @@
         // --- Логика таймера в формате ЧЧ:ММ:СС (или ДД д ЧЧ:ММ:СС) ---
         if (!openingDateStr || !endDateStr) return;
 
-        const openingTime = new Date(openingDateStr).getTime();
-        const endTime = new Date(endDateStr).getTime();
+        let openingTime = new Date(openingDateStr).getTime();
+        let endTime = new Date(endDateStr).getTime();
 
         function formatTimeRemaining(distance) {
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
