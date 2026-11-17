@@ -507,7 +507,7 @@
                         modalCurrentPriceEl.textContent = formattedCurrent;
                         modalEnteredPriceEl.textContent = formattedEntered;
 
-                        if (Number.isFinite(signedRatio)){
+                        if (absPercent === Infinity){
                             modalDiffBadgeEl.textContent = `Отклонение 100%`;
                         } else {
                             modalDiffBadgeEl.textContent = `Отклонение ${sign}${absPercent}%`;
