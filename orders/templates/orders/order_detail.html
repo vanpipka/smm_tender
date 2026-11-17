@@ -34,7 +34,8 @@
          data-order-id="{{ order.id }}"
          data-opening-date="{{ order.tender_opening_date|date:'c' }}"
          data-end-date="{{ order.calculated_end_date|date:'c' }}"
-         data-price-step="{{ order.price_step }}">
+         data-price-step="{{ order.price_step }}"
+         data-initial-price="{{ order.initial_price }}">
          
         <div class="card-body p-4">
             
@@ -446,6 +447,7 @@
         }
 
         const priceStep = parsePrice(detailCard.getAttribute("data-price-step")) || 0;
+        const initialPrice = parsePrice(detailCard.getAttribute("data-initial-price")) || 0;
         const bidOwnerBadgeEl = document.getElementById("current-bid-owner-badge");
 
         const orderId = detailCard.getAttribute("data-order-id");
@@ -458,7 +460,7 @@
         const lowestBidEl = detailCard.querySelector(".js-lowest-bid");
 
         let currentLowestBid = lowestBidEl ? parsePrice(lowestBidEl.textContent) : NaN;
-        if (Number.isNaN(currentLowestBid)) currentLowestBid = 0;
+        if (Number.isNaN(currentLowestBid)) currentLowestBid = initialPrice;
 
         let currentCurrency = "{{ order.tender_currency|default:'руб.' }}";
 
@@ -479,7 +481,7 @@
                 
                 const enteredAmount = parsePrice(amountInput.value);
 
-                if (!Number.isNaN(enteredAmount) && currentLowestBid > 0) {
+                if (!Number.isNaN(enteredAmount)) {
                     const absDiff = Math.abs(enteredAmount - currentLowestBid);
                     const signedRatio = (enteredAmount - currentLowestBid) / currentLowestBid;
 
