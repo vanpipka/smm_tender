@@ -199,6 +199,7 @@
     <!-- Секция: Маршрут -->
     <h5 class="fw-bold mb-3 text-dark">Маршрут</h5>
     <div class="concept-card mb-4">
+        <!-- 
         <div class="route-map-banner d-flex align-items-center justify-content-center">
             <svg width="260" height="50" viewBox="0 0 260 50" fill="none">
                 <path d="M20 15 Q 130 45, 240 25" stroke="#93c5fd" stroke-width="2.5" stroke-dasharray="5 5" fill="none"/>
@@ -208,6 +209,7 @@
                 <circle cx="240" cy="25" r="4" fill="#2563eb"/>
             </svg>
         </div>
+        -->
 
         <div class="card-body p-4">
             <div class="row g-4">
@@ -217,13 +219,13 @@
                             <div class="route-dot-inner"></div>
                         </div>
                         <div>
+                            <span class="text-muted small">Отправка</span>
                             <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                                 <span class="fw-bold text-dark">{{ order.sender }}</span>
                                 {% if order.departure_period %}
                                     <span class="badge bg-light text-dark border small fw-normal">{{ order.departure_period }}</span>
                                 {% endif %}
                             </div>
-                            <span class="text-muted small">Отправка</span>
                         </div>
                     </div>
 
@@ -256,13 +258,13 @@
                             <div class="route-dot-inner"></div>
                         </div>
                         <div>
+                            <span class="text-muted small">Получение</span>
                             <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                                 <span class="fw-bold text-dark">{{ order.recipient }}</span>
                                 {% if order.arrival_period %}
                                     <span class="badge bg-light text-dark border small fw-normal">{{ order.arrival_period }}</span>
                                 {% endif %}
                             </div>
-                            <span class="text-muted small">Получение</span>
                         </div>
                     </div>
                 </div>
@@ -270,7 +272,6 @@
                 <div class="col-md-6 ps-md-4">
                     <div class="mb-3">
                         <div class="d-flex align-items-center gap-2 mb-1">
-                            <span class="fw-bold text-dark small">Отгрузка:</span>
                             {% if order.departure_period %}
                                 <span class="badge bg-light text-dark border small fw-normal">{{ order.departure_period }}</span>
                             {% endif %}
@@ -280,7 +281,6 @@
 
                     <div>
                         <div class="d-flex align-items-center gap-2 mb-1">
-                            <span class="fw-bold text-dark small">Получение:</span>
                             {% if order.arrival_period %}
                                 <span class="badge bg-light text-dark border small fw-normal">{{ order.arrival_period }}</span>
                             {% endif %}
