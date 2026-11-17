@@ -271,20 +271,10 @@
 
                 <div class="col-md-6 ps-md-4">
                     <div class="mb-3">
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            {% if order.departure_period %}
-                                <span class="badge bg-light text-dark border small fw-normal">{{ order.departure_period }}</span>
-                            {% endif %}
-                        </div>
                         <p class="text-dark mb-0 small">{{ order.sender_address|default:"Адрес не указан" }}</p>
                     </div>
 
                     <div>
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            {% if order.arrival_period %}
-                                <span class="badge bg-light text-dark border small fw-normal">{{ order.arrival_period }}</span>
-                            {% endif %}
-                        </div>
                         <p class="text-dark mb-0 small">{{ order.recipient_address|default:"Адрес не указан" }}</p>
                     </div>
                 </div>
