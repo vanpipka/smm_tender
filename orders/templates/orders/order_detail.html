@@ -479,8 +479,8 @@
                 if (isConfirmed) return;
                 if (!amountInput) return;
 
-                const absDiff = Math.abs(enteredAmount - currentLowestBid);
                 const enteredAmount = parsePrice(amountInput.value);
+                const absDiff = Math.abs(enteredAmount - currentLowestBid);
 
                 if (!Number.isNaN(enteredAmount) && currentLowestBid > 0) {
                     const signedRatio = (enteredAmount - currentLowestBid) / currentLowestBid;
