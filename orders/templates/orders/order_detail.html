@@ -70,11 +70,11 @@
                         <div id="current-bid-owner-badge" class="mt-2">
                             {% if order.lowest_bid is not None %}
                                 {% if is_user_lowest_bid %}
-                                    <span class="badge rounded-pill px-2 py-1 fw-medium" style="background-color: #dcfce7; color: #166534; font-size: 0.75rem;">
+                                    <span class="badge rounded-pill px-2 py-1 fw-medium badge-bid-user">
                                         <i class="bi bi-check-circle-fill me-1"></i>Ваша ставка лидирует
                                     </span>
                                 {% else %}
-                                    <span class="badge rounded-pill px-2 py-1 fw-medium bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.75rem;">
+                                    <span class="badge rounded-pill px-2 py-1 fw-medium badge-bid-other">
                                         <i class="bi bi-exclamation-circle me-1"></i>Ставка другого участника
                                     </span>
                                 {% endif %}
@@ -98,7 +98,6 @@
                     <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
                         <label for="id_amount" class="fw-bold text-dark mb-0">Сделать ставку</label>
                         
-                        <!-- Компактный бейдж уведомлений вместо широкого алерта -->
                         {% if messages %}
                             {% for message in messages %}
                                 <span class="badge rounded-pill px-3 py-2 fw-medium {% if message.tags == 'success' %}bg-success-subtle text-success border border-success-subtle{% else %}bg-warning-subtle text-dark border{% endif %}">
@@ -127,7 +126,6 @@
                     </form>
                 </div>
 
-                <!-- Плашка о реальном времени -->
                 <div class="mt-3 px-3 py-2 rounded text-muted small" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
                     Информация об актуальных ставках обновляется в режиме реального времени.
                 </div>
@@ -201,7 +199,6 @@
     <!-- Секция: Маршрут -->
     <h5 class="fw-bold mb-3 text-dark">Маршрут</h5>
     <div class="concept-card mb-4">
-        <!-- Декоративная полоса карты сверху -->
         <div class="route-map-banner d-flex align-items-center justify-content-center">
             <svg width="260" height="50" viewBox="0 0 260 50" fill="none">
                 <path d="M20 15 Q 130 45, 240 25" stroke="#93c5fd" stroke-width="2.5" stroke-dasharray="5 5" fill="none"/>
@@ -214,9 +211,7 @@
 
         <div class="card-body p-4">
             <div class="row g-4">
-                <!-- Левая колонка: Контрагенты и периоды -->
                 <div class="col-md-6 border-end-md">
-                    <!-- Точка отправления -->
                     <div class="d-flex align-items-start mb-3">
                         <div class="route-dot-outer me-3">
                             <div class="route-dot-inner"></div>
@@ -232,7 +227,6 @@
                         </div>
                     </div>
 
-                    <!-- Промежуточные точки ТО (если есть) -->
                     {% if order.departures_custom %}
                         <div class="d-flex align-items-start mb-3 text-muted">
                             <div class="route-dot-outer me-3" style="background-color: #e2e8f0;">
@@ -257,7 +251,6 @@
                         </div>
                     {% endif %}
 
-                    <!-- Точка назначения -->
                     <div class="d-flex align-items-start">
                         <div class="route-dot-outer me-3">
                             <div class="route-dot-inner"></div>
@@ -274,7 +267,6 @@
                     </div>
                 </div>
 
-                <!-- Правая колонка: Адреса отгрузки и получения -->
                 <div class="col-md-6 ps-md-4">
                     <div class="mb-3">
                         <div class="d-flex align-items-center gap-2 mb-1">
@@ -315,7 +307,6 @@
     </ul>
 
     <div class="tab-content concept-card p-3" id="orderTabContent" style="border-top-left-radius: 0;">
-        <!-- Таб 1: Грузы -->
         <div class="tab-pane fade show active" id="cargo-pane" role="tabpanel">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -347,7 +338,6 @@
             </div>
         </div>
 
-        <!-- Таб 2: Файлы -->
         <div class="tab-pane fade" id="files-pane" role="tabpanel">
             {% if order.files.all %}
                 <ul class="list-group list-group-flush">
@@ -368,7 +358,7 @@
     </div>
 </div>
 
-<!-- Модальное окно подтверждения ставки по макету -->
+<!-- Модальное окно подтверждения ставки -->
 <div class="modal fade" id="bidConfirmModal" tabindex="-1" aria-labelledby="bidConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 580px;">
         <div class="modal-content border-0 shadow-lg p-4" style="border-radius: 20px;">
@@ -430,12 +420,10 @@
 {% block extra_js %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-
         const detailCard = document.getElementById("tender-card-detail");
-
         if (!detailCard) return;
 
-        // Автоматически добавляем Bootstrap класс form-control полю ввода ставки, если он не задан в Django Form
+        // Автоматически добавляем Bootstrap класс form-control полю ввода ставки
         const amountInputEl = document.querySelector('#bid-form [name="amount"]');
         if (amountInputEl && !amountInputEl.classList.contains('form-control')) {
             amountInputEl.classList.add('form-control', 'py-2');
@@ -464,7 +452,7 @@
         const openingDateStr = detailCard.getAttribute("data-opening-date");
         const endDateStr = detailCard.getAttribute("data-end-date");
         
-        // Элементы нового крупного таймера
+        // Элементы крупного таймера
         const timerDisplay = detailCard.querySelector(".tender-timer-display");
         const timerLabel = detailCard.querySelector(".tender-timer-label");
         const lowestBidEl = detailCard.querySelector(".js-lowest-bid");
@@ -530,11 +518,9 @@
             });
         }
 
-        // --- Логика таймера в формате ЧЧ:ММ:СС (или ДД д ЧЧ:ММ:СС) ---
-        if (!openingDateStr || !endDateStr) return;
-
-        let openingTime = new Date(openingDateStr).getTime();
-        let endTime = new Date(endDateStr).getTime();
+        // --- Логика таймера ---
+        let openingTime = openingDateStr ? new Date(openingDateStr).getTime() : NaN;
+        let endTime = endDateStr ? new Date(endDateStr).getTime() : NaN;
 
         function formatTimeRemaining(distance) {
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -549,52 +535,24 @@
         }
 
         function updateTimer() {
+            if (Number.isNaN(openingTime) || Number.isNaN(endTime)) return;
             const now = new Date().getTime();
 
             if (now < openingTime) {
                 const distance = openingTime - now;
                 timerDisplay.textContent = formatTimeRemaining(distance);
-                timerDisplay.style.color = "#d97706"; // Янтарный цвет до начала
+                timerDisplay.style.color = "#d97706";
                 timerLabel.textContent = "ДО НАЧАЛА ТОРГОВ";
             } else if (now >= openingTime && now < endTime) {
                 const distance = endTime - now;
                 timerDisplay.textContent = formatTimeRemaining(distance);
-                timerDisplay.style.color = "#b91c1c"; // Акцентный красный при активных торгах
+                timerDisplay.style.color = "#b91c1c";
                 timerLabel.textContent = "ДО ОКОНЧАНИЯ";
             } else {
                 timerDisplay.textContent = "00:00:00";
                 timerDisplay.style.color = "#6b7280";
                 timerLabel.textContent = "ТОРГИ ЗАВЕРШЕНЫ";
             }
-        }
-
-        function fetchPrices() {
-            fetch(`/api/${orderId}/bids/`)
-                .then(response => response.json())
-                .then(data => {
-                    currentCurrency = data.currency || currentCurrency;
-                    if (data.lowest_bid !== null) {
-                        const parsedBid = parsePrice(data.lowest_bid);
-                        currentLowestBid = Number.isNaN(parsedBid) ? 0 : parsedBid;
-
-                        const newText = `${formatPrice(data.lowest_bid)} ${currentCurrency}`;
-                        if (lowestBidEl.textContent.trim() !== newText) {
-                            lowestBidEl.textContent = newText;
-                            lowestBidEl.classList.add('text-success');
-                            setTimeout(() => lowestBidEl.classList.remove('text-success'), 1500);
-                        }
-
-                        // Обновляем статус принадлежности ставки (ожидается поле data.is_user_bid от бэкенда)
-                        if (typeof data.is_user_bid !== "undefined") {
-                            updateBidOwnerStatus(data.is_user_bid, true);
-                        }
-                    } else {
-                        currentLowestBid = 0;
-                        lowestBidEl.textContent = `${formatPrice(0)} ${currentCurrency}`;
-                        updateBidOwnerStatus(false, false);
-                    }
-                })
-                .catch(err => console.error(err));
         }
 
         function updateBidOwnerStatus(isUserBid, hasBids) {
@@ -616,6 +574,61 @@
                         <i class="bi bi-exclamation-circle me-1"></i>Ставка другого участника
                     </span>`;
             }
+        }
+
+        function fetchPrices() {
+            fetch(`/api/${orderId}/bids/`, {
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache' }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    currentCurrency = data.currency || currentCurrency;
+
+                    // Обновляем время окончания торгов при получении новой даты от API
+                    const newEndDate = data.end_date || data.tender_ending_date || data.calculated_end_date;
+                    if (newEndDate) {
+                        const parsedEnd = new Date(newEndDate).getTime();
+                        if (!Number.isNaN(parsedEnd) && parsedEnd !== endTime) {
+                            endTime = parsedEnd;
+                            detailCard.setAttribute("data-end-date", newEndDate);
+                            updateTimer();
+                        }
+                    }
+
+                    // Обновляем время начала торгов при получении новой даты от API
+                    const newOpeningDate = data.opening_date || data.tender_opening_date;
+                    if (newOpeningDate) {
+                        const parsedOpening = new Date(newOpeningDate).getTime();
+                        if (!Number.isNaN(parsedOpening) && parsedOpening !== openingTime) {
+                            openingTime = parsedOpening;
+                            detailCard.setAttribute("data-opening-date", newOpeningDate);
+                            updateTimer();
+                        }
+                    }
+
+                    // Обновляем текущую ставку и статус участника
+                    if (data.lowest_bid !== null) {
+                        const parsedBid = parsePrice(data.lowest_bid);
+                        currentLowestBid = Number.isNaN(parsedBid) ? 0 : parsedBid;
+
+                        const newText = `${formatPrice(data.lowest_bid)} ${currentCurrency}`;
+                        if (lowestBidEl.textContent.trim() !== newText) {
+                            lowestBidEl.textContent = newText;
+                            lowestBidEl.classList.add('text-success');
+                            setTimeout(() => lowestBidEl.classList.remove('text-success'), 1500);
+                        }
+
+                        if (typeof data.is_user_bid !== "undefined") {
+                            updateBidOwnerStatus(data.is_user_bid, true);
+                        }
+                    } else {
+                        currentLowestBid = 0;
+                        lowestBidEl.textContent = `${formatPrice(0)} ${currentCurrency}`;
+                        updateBidOwnerStatus(false, false);
+                    }
+                })
+                .catch(err => console.error(err));
         }
 
         updateTimer();
