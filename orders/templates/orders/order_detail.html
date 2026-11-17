@@ -138,6 +138,19 @@
                                 --
                             {% endif %}
                         </span>
+                        <div id="current-bid-owner-badge" class="mt-2">
+                            {% if order.lowest_bid is not None %}
+                                {% if is_user_lowest_bid %}
+                                    <span class="badge rounded-pill px-2 py-1 fw-medium" style="background-color: #dcfce7; color: #166534; font-size: 0.75rem;">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Ваша ставка лидирует
+                                    </span>
+                                {% else %}
+                                    <span class="badge rounded-pill px-2 py-1 fw-medium bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.75rem;">
+                                        <i class="bi bi-exclamation-circle me-1"></i>Ставка другого участника
+                                    </span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -488,7 +501,10 @@
 {% block extra_js %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+
+        const bidOwnerBadgeEl = document.getElementById("current-bid-owner-badge");
         const detailCard = document.getElementById("tender-card-detail");
+
         if (!detailCard) return;
 
         // Автоматически добавляем Bootstrap класс form-control полю ввода ставки, если он не задан в Django Form
@@ -637,12 +653,39 @@
                             lowestBidEl.classList.add('text-success');
                             setTimeout(() => lowestBidEl.classList.remove('text-success'), 1500);
                         }
+
+                        // Обновляем статус принадлежности ставки (ожидается поле data.is_user_bid от бэкенда)
+                        if (typeof data.is_user_bid !== "undefined") {
+                            updateBidOwnerStatus(data.is_user_bid, true);
+                        }
                     } else {
                         currentLowestBid = 0;
                         lowestBidEl.textContent = `${formatPrice(0)} ${currentCurrency}`;
+                        updateBidOwnerStatus(false, false);
                     }
                 })
                 .catch(err => console.error(err));
+        }
+
+        function updateBidOwnerStatus(isUserBid, hasBids) {
+            if (!bidOwnerBadgeEl) return;
+
+            if (!hasBids) {
+                bidOwnerBadgeEl.innerHTML = "";
+                return;
+            }
+
+            if (isUserBid) {
+                bidOwnerBadgeEl.innerHTML = `
+                    <span class="badge rounded-pill px-2 py-1 fw-medium" style="background-color: #dcfce7; color: #166534; font-size: 0.75rem;">
+                        <i class="bi bi-check-circle-fill me-1"></i>Ваша ставка лидирует
+                    </span>`;
+            } else {
+                bidOwnerBadgeEl.innerHTML = `
+                    <span class="badge rounded-pill px-2 py-1 fw-medium bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size: 0.75rem;">
+                        <i class="bi bi-exclamation-circle me-1"></i>Ставка другого участника
+                    </span>`;
+            }
         }
 
         updateTimer();

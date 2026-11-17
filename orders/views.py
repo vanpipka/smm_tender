@@ -174,6 +174,7 @@ def order_bids_api(request, pk):
         'lowest_bid': float(lowest_bid) if lowest_bid else None,
         'user_bid': float(user_bid) if user_bid else None,
         'currency': order.tender_currency,
+        'is_user_bid': True if user_bid == lowest_bid and user_bid is not None else False,
     })
 
 
