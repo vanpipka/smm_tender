@@ -481,7 +481,7 @@
                 
                 const enteredAmount = parsePrice(amountInput.value);
 
-                if (!Number.isNaN(enteredAmount)) {
+                if (!Number.isNaN(enteredAmount) && !Number.isNaN(currentLowestBid)) {
                     const absDiff = Math.abs(enteredAmount - currentLowestBid);
                     const signedRatio = (enteredAmount - currentLowestBid) / currentLowestBid;
 
@@ -506,7 +506,13 @@
 
                         modalCurrentPriceEl.textContent = formattedCurrent;
                         modalEnteredPriceEl.textContent = formattedEntered;
-                        modalDiffBadgeEl.textContent = `Отклонение ${sign}${absPercent}%`;
+
+                        if (Number.isFinite(signedRatio)){
+                            modalDiffBadgeEl.textContent = `Отклонение 100%`;
+                        } else {
+                            modalDiffBadgeEl.textContent = `Отклонение ${sign}${absPercent}%`;
+                        }
+
                         confirmSubmitBtn.textContent = `Подтвердить цену ${formattedEntered}`;
 
                         confirmModal.show();
