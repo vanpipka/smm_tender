@@ -95,3 +95,91 @@ input[type="number"] {
 .js-price {
     font-variant-numeric: tabular-nums;
 }
+
+
+.badge-bid-user {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    font-size: 0.75rem;
+}
+
+.badge-bid-other {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    font-size: 0.75rem;
+}
+
+.concept-card {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+    .price-box {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 1.25rem 1rem;
+        text-align: center;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .price-box-center {
+        background-color: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+    .info-stat-card {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.15rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        height: 100%;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+    .info-stat-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background-color: #f1f5f9;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    .route-map-banner {
+        height: 76px;
+        background-color: #eef2f6;
+        background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px), radial-gradient(#cbd5e1 1.5px, #eef2f6 1.5px);
+        background-size: 32px 32px;
+        background-position: 0 0, 16px 16px;
+        border-bottom: 1px solid #e5e7eb;
+        border-radius: 12px 12px 0 0;
+        position: relative;
+        overflow: hidden;
+    }
+    .route-dot-outer {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background-color: rgba(37, 99, 235, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 4px;
+    }
+    .route-dot-inner {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #2563eb;
+    }
