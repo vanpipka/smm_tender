@@ -6,185 +6,352 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'orders/css/orders.css' %}">
+<style>
+    /* Дополнительные стили для новой концепции */
+    .concept-card {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+    .price-box {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 1.25rem 1rem;
+        text-align: center;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .price-box-center {
+        background-color: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+    .info-stat-card {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.15rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        height: 100%;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+    .info-stat-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background-color: #f1f5f9;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    .route-map-banner {
+        height: 76px;
+        background-color: #eef2f6;
+        background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px), radial-gradient(#cbd5e1 1.5px, #eef2f6 1.5px);
+        background-size: 32px 32px;
+        background-position: 0 0, 16px 16px;
+        border-bottom: 1px solid #e5e7eb;
+        border-radius: 12px 12px 0 0;
+        position: relative;
+        overflow: hidden;
+    }
+    .route-dot-outer {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background-color: rgba(37, 99, 235, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 4px;
+    }
+    .route-dot-inner {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #2563eb;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="container my-4">
-    <!-- Шапка с номером заказа -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Заказ: {{ order.number }}</h2>
-        <a href="{% url 'orders:order_list' %}" class="btn btn-outline-secondary btn-sm">← Назад к списку</a>
+    <!-- Шапка с номером заказа и статусом -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <h2 class="fw-bold mb-0 text-dark">Заказ: {{ order.number }}</h2>
+            {% if is_tender_active %}
+                <span class="badge rounded-pill px-2 py-1 fw-semibold" style="background-color: #dcfce7; color: #166534; font-size: 0.75rem; letter-spacing: 0.05em;">ACTIVE</span>
+            {% else %}
+                <span class="badge rounded-pill px-2 py-1 fw-semibold bg-secondary-subtle text-secondary" style="font-size: 0.75rem; letter-spacing: 0.05em;">INACTIVE</span>
+            {% endif %}
+        </div>
+        <a href="{% url 'orders:order_list' %}" class="btn btn-outline-secondary btn-sm px-3 py-2" style="border-radius: 8px;">← Назад к списку</a>
     </div>
 
-    <hr class="mb-4">
-
     <!-- Секция: Торги по заявке -->
-    <h4 class="mb-3">Торги по заявке</h4>
+    <h5 class="fw-bold mb-3 text-dark">Торги по заявке</h5>
     
-    <div class="card border-0 shadow-sm bg-light mb-4" 
+    <div class="concept-card mb-4" 
          id="tender-card-detail"
          data-order-id="{{ order.id }}"
          data-opening-date="{{ order.tender_opening_date|date:'c' }}"
          data-end-date="{{ order.tender_ending_date|date:'c' }}">
         <div class="card-body p-4">
             
-            <!-- Статус аукциона (динамический таймер) -->
-            <div class="mb-3">
-                <span class="badge tender-status-badge px-3 py-2 fs-6">Проверка статуса...</span>
+            <!-- Центральный крупный таймер -->
+            <div class="text-center mb-4">
+                <div class="tender-timer-display fw-bold" style="font-size: 2.25rem; line-height: 1.1; color: #b91c1c; font-variant-numeric: tabular-nums;">
+                    --:--:--
+                </div>
+                <div class="tender-timer-label text-muted small fw-semibold text-uppercase mt-1" style="letter-spacing: 0.05em;">
+                    ПРОВЕРКА СТАТУСА...
+                </div>
             </div>
 
-            <div class="row g-3">
+            <!-- Карточки цен (Базовая -> Текущая в центре -> Шаг цены) -->
+            <div class="row g-3 mb-4">
                 <div class="col-md-4">
-                    <span class="text-muted d-block small uppercase">ТЕКУЩАЯ СТАВКА!:</span>
-                    <span class="fs-4 fw-bold text-dark js-lowest-bid js-price">
-                        {% if order.lowest_bid is not None %}
-                            {{ order.lowest_bid|floatformat:2 }} {{ order.tender_currency }}
-                        {% else %}
-                            --
-                        {% endif %}
-                    </span>
+                    <div class="price-box">
+                        <span class="text-muted small text-uppercase fw-semibold mb-1" style="font-size: 0.75rem;">БАЗОВАЯ ЦЕНА:</span>
+                        <span class="fs-4 fw-bold text-dark js-price">
+                            {% if order.initial_price %}{{ order.initial_price }} {{ order.tender_currency }}{% else %}--{% endif %}
+                        </span>
+                    </div>
                 </div>
                 <div class="col-md-4">
-                    <span class="text-muted d-block small uppercase">БАЗОВАЯ ЦЕНА:</span>
-                    <span class="fs-4 fw-bold text-dark js-price">
-                        {% if order.initial_price %}{{ order.initial_price }} {{ order.tender_currency }}{% else %}--{% endif %}
-                    </span>
+                    <div class="price-box price-box-center">
+                        <span class="text-muted small text-uppercase fw-semibold mb-1" style="font-size: 0.75rem;">ТЕКУЩАЯ СТАВКА:</span>
+                        <span class="fs-3 fw-bold text-dark js-lowest-bid js-price">
+                            {% if order.lowest_bid is not None %}
+                                {{ order.lowest_bid|floatformat:2 }} {{ order.tender_currency }}
+                            {% else %}
+                                --
+                            {% endif %}
+                        </span>
+                    </div>
                 </div>
                 <div class="col-md-4">
-                    <span class="text-muted d-block small uppercase">ШАГ ЦЕНЫ:</span>
-                    <span class="fs-4 fw-bold text-secondary js-price">
-                        {{ order.price_step }} {{ order.tender_currency }}
-                    </span>
+                    <div class="price-box">
+                        <span class="text-muted small text-uppercase fw-semibold mb-1" style="font-size: 0.75rem;">ШАГ ЦЕНЫ:</span>
+                        <span class="fs-4 fw-bold text-dark js-price">
+                            {{ order.price_step }} {{ order.tender_currency }}
+                        </span>
+                    </div>
                 </div>
             </div>
+
+            <!-- Блок подачи ставки внутри основной карточки -->
+            {% if is_tender_active %}
+                <div class="pt-2">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+                        <label for="id_amount" class="fw-bold text-dark mb-0">Сделать ставку</label>
+                        
+                        <!-- Компактный бейдж уведомлений вместо широкого алерта -->
+                        {% if messages %}
+                            {% for message in messages %}
+                                <span class="badge rounded-pill px-3 py-2 fw-medium {% if message.tags == 'success' %}bg-success-subtle text-success border border-success-subtle{% else %}bg-warning-subtle text-dark border{% endif %}">
+                                    {{ message }} {% if message.tags == 'success' %}✓{% endif %}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <form method="post" id="bid-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.amount }}
+                            {% if form.amount.errors %}
+                                <div class="text-danger small mt-1">{{ form.amount.errors.as_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger py-2 mb-3 small">{{ form.non_field_errors }}</div>
+                        {% endif %}
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" style="border-radius: 8px; background-color: #2563eb; border-color: #2563eb;">
+                            Подать ставку
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Плашка о реальном времени -->
+                <div class="mt-3 px-3 py-2 rounded text-muted small" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                    Информация об актуальных ставках обновляется в режиме реального времени.
+                </div>
+            {% else %}
+                <div class="alert alert-secondary mb-0 small" role="alert">
+                    🔒 Подача ставок для данного заказа в настоящий момент недоступна (торги завершены или еще не начались).
+                </div>
+            {% endif %}
+
         </div>
     </div>
 
-    {% if is_tender_active %}
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title mb-3">Сделать ставку</h5>
-                
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-
-                <form method="post" id="bid-form" class="row g-3 align-items-center">
-                    {% csrf_token %}
-                    <div class="col-auto flex-grow-1">
-                        {{ form.amount }}
-                        {% if form.amount.errors %}
-                            <div class="text-danger small mt-1">{{ form.amount.errors.as_text }}</div>
-                        {% endif %}
+    <!-- Секция: Общая информация (4 карточки с иконками) -->
+    <h5 class="fw-bold mb-3 text-dark">Общая информация</h5>
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="info-stat-card">
+                <div class="info-stat-icon">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <div>
+                    <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.03em;">СТОИМОСТЬ ГРУЗА:</div>
+                    <div class="fw-bold fs-5 text-dark js-price">
+                        {% if order.cargo_cost %}{{ order.cargo_cost }} {{ order.cargo_currency }}{% else %}--{% endif %}
                     </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary px-4">Подать ставку</button>
-                    </div>
-                </form>
-
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger mt-3 mb-0 small">{{ form.non_field_errors }}</div>
-                {% endif %}
+                </div>
             </div>
         </div>
-        <!-- Уведомление / статус -->
-        <div class="alert alert-light border shadow-sm mb-4 text-muted" role="alert">
-            Информация об актуальных ставках обновляется в режиме реального времени.
-        </div>
-    {% else %}
-        <!-- Если торги не активны, выводим аккуратную плашку-подсказку вместо формы -->
-        <div class="alert alert-secondary shadow-sm mb-4" role="alert">
-            🔒 Подача ставок для данного заказа в настоящий момент недоступна (торги завершены или еще не начались).
-        </div>
-    {% endif %}
 
-    <!-- Секция: Общая информация -->
-    <h4 class="mb-3">Общая информация</h4>
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <p class="text-muted mb-1 small">Стоимость груза</p>
-                    <p class="fw-semibold fs-5 mb-3 js-price">
-                        {% if order.cargo_cost %}{{ order.cargo_cost }} {{ order.cargo_currency }}{% else %}--{% endif %}
-                    </p>
-
-                    <p class="text-muted mb-1 small">Вес груза</p>
-                    <p class="fw-semibold fs-5 mb-0 js-price">
-                        {% if order.total_weight %}{{ order.total_weight }} кг.{% else %}--{% endif %}
-                    </p>
+        <div class="col-sm-6 col-lg-3">
+            <div class="info-stat-card">
+                <div class="info-stat-icon">
+                    <i class="bi bi-minecart-loaded"></i>
                 </div>
-                <div class="col-md-6">
-                    <p class="text-muted mb-1 small">Количество мест</p>
-                    <p class="fw-semibold fs-5 mb-3 js-price">
-                        {% if order.total_places %}{{ order.total_places }}{% else %}4{% endif %}
-                    </p>
+                <div>
+                    <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.03em;">ВЕС ГРУЗА:</div>
+                    <div class="fw-bold fs-5 text-dark js-price">
+                        {% if order.total_weight %}{{ order.total_weight }} кг{% else %}--{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                    <p class="text-muted mb-1 small">Тип подвижного состава</p>
-                    <p class="fw-semibold fs-5 mb-0">----</p>
+        <div class="col-sm-6 col-lg-3">
+            <div class="info-stat-card">
+                <div class="info-stat-icon">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <div>
+                    <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.03em;">КОЛИЧЕСТВО МЕСТ:</div>
+                    <div class="fw-bold fs-5 text-dark js-price">
+                        {% if order.total_places %}{{ order.total_places }}{% else %}4{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="info-stat-card">
+                <div class="info-stat-icon">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <div>
+                    <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.03em;">ТИП ПОДВИЖНОГО СОСТАВА:</div>
+                    <div class="fw-bold fs-5 text-dark">--</div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Секция: Маршрут -->
-    <h4 class="mb-3">Маршрут</h4>
-    <div class="card border-0 shadow-sm mb-4">
+    <h5 class="fw-bold mb-3 text-dark">Маршрут</h5>
+    <div class="concept-card mb-4">
+        <!-- Декоративная полоса карты сверху -->
+        <div class="route-map-banner d-flex align-items-center justify-content-center">
+            <svg width="260" height="50" viewBox="0 0 260 50" fill="none">
+                <path d="M20 15 Q 130 45, 240 25" stroke="#93c5fd" stroke-width="2.5" stroke-dasharray="5 5" fill="none"/>
+                <circle cx="20" cy="15" r="7" fill="#bfdbfe"/>
+                <circle cx="20" cy="15" r="3.5" fill="#1d4ed8"/>
+                <circle cx="240" cy="25" r="8" fill="#bfdbfe"/>
+                <circle cx="240" cy="25" r="4" fill="#2563eb"/>
+            </svg>
+        </div>
+
         <div class="card-body p-4">
-            <div class="route-timeline">
-                <!-- Точка отправления -->
-                <div class="timeline-item d-flex align-items-start mb-4">
-                    <div class="timeline-marker bg-primary rounded-circle mt-1 me-3"></div>
-                    <div>
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <span class="fw-bold">{{ order.sender }}</span>
-                            {% if order.departure_period %}
-                                <span class="badge bg-light text-dark border small">{{ order.departure_period }}</span>
-                            {% endif %}
+            <div class="row g-4">
+                <!-- Левая колонка: Контрагенты и периоды -->
+                <div class="col-md-6 border-end-md">
+                    <!-- Точка отправления -->
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="route-dot-outer me-3">
+                            <div class="route-dot-inner"></div>
                         </div>
-                        <p class="text-muted mb-0 small">{{ order.sender_address }}</p>
-                    </div>
-                </div>
-
-                <!-- Промежуточные точки (заглушки как на макете, если понадобятся) -->
-                {% if order.departures_custom %}
-                    <div class="timeline-item d-flex align-items-start mb-4 text-muted">
-                        <div class="timeline-marker bg-secondary rounded-circle mt-1 me-3 opacity-50"></div>
                         <div>
-                            <span class="fw-semibold text-dark d-block mb-1">Пункт ТО в стране отправления</span>
-                            <p class="small mb-0">
-                                {{ order.departures_custom }}
-                            </p>
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                <span class="fw-bold text-dark">{{ order.sender }}</span>
+                                {% if order.departure_period %}
+                                    <span class="badge bg-light text-dark border small fw-normal">{{ order.departure_period }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-muted small">Отправка</span>
                         </div>
                     </div>
-                {% endif %}
 
-                {% if order.arrivals_custom %}               
-                <div class="timeline-item d-flex align-items-start mb-4 text-muted">
-                    <div class="timeline-marker bg-secondary rounded-circle mt-1 me-3 opacity-50"></div>
-                    <div>
-                        <span class="fw-semibold text-dark d-block mb-1">Пункт ТО в стране назначения</span>
-                        <p class="small mb-0">{{ order.arrivals_custom }}</p>
+                    <!-- Промежуточные точки ТО (если есть) -->
+                    {% if order.departures_custom %}
+                        <div class="d-flex align-items-start mb-3 text-muted">
+                            <div class="route-dot-outer me-3" style="background-color: #e2e8f0;">
+                                <div class="route-dot-inner" style="background-color: #64748b;"></div>
+                            </div>
+                            <div>
+                                <span class="fw-semibold text-dark d-block small">Пункт ТО в стране отправления</span>
+                                <span class="small">{{ order.departures_custom }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if order.arrivals_custom %}
+                        <div class="d-flex align-items-start mb-3 text-muted">
+                            <div class="route-dot-outer me-3" style="background-color: #e2e8f0;">
+                                <div class="route-dot-inner" style="background-color: #64748b;"></div>
+                            </div>
+                            <div>
+                                <span class="fw-semibold text-dark d-block small">Пункт ТО в стране назначения</span>
+                                <span class="small">{{ order.arrivals_custom }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Точка назначения -->
+                    <div class="d-flex align-items-start">
+                        <div class="route-dot-outer me-3">
+                            <div class="route-dot-inner"></div>
+                        </div>
+                        <div>
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                <span class="fw-bold text-dark">{{ order.recipient }}</span>
+                                {% if order.arrival_period %}
+                                    <span class="badge bg-light text-dark border small fw-normal">{{ order.arrival_period }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-muted small">Получение</span>
+                        </div>
                     </div>
                 </div>
-                {% endif %}
 
-                <!-- Точка назначения -->
-                <div class="timeline-item d-flex align-items-start">
-                    <div class="timeline-marker bg-primary rounded-circle mt-1 me-3"></div>
-                    <div>
+                <!-- Правая колонка: Адреса отгрузки и получения -->
+                <div class="col-md-6 ps-md-4">
+                    <div class="mb-3">
                         <div class="d-flex align-items-center gap-2 mb-1">
-                            <span class="fw-bold">{{ order.recipient }}</span>
-                            {% if order.arrival_period %}
-                                <span class="badge bg-light text-dark border small">{{ order.arrival_period }}</span>
+                            <span class="fw-bold text-dark small">Отгрузка:</span>
+                            {% if order.departure_period %}
+                                <span class="badge bg-light text-dark border small fw-normal">{{ order.departure_period }}</span>
                             {% endif %}
                         </div>
-                        <p class="text-muted mb-0 small">{{ order.recipient_address }}</p>
+                        <p class="text-dark mb-0 small">{{ order.sender_address|default:"Адрес не указан" }}</p>
+                    </div>
+
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="fw-bold text-dark small">Получение:</span>
+                            {% if order.arrival_period %}
+                                <span class="badge bg-light text-dark border small fw-normal">{{ order.arrival_period }}</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-dark mb-0 small">{{ order.recipient_address|default:"Адрес не указан" }}</p>
                     </div>
                 </div>
             </div>
@@ -192,36 +359,38 @@
     </div>
 
     <!-- Табы: Грузы и Файлы -->
-    <ul class="nav nav-tabs" id="orderTab" role="tablist">
+    <ul class="nav nav-tabs border-bottom-0" id="orderTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active fw-semibold" id="cargo-tab" data-bs-toggle="tab" data-bs-target="#cargo-pane" type="button" role="tab">
-                📋 Грузы
+            <button class="nav-link active fw-semibold px-3 py-2" id="cargo-tab" data-bs-toggle="tab" data-bs-target="#cargo-pane" type="button" role="tab" style="border-radius: 10px 10px 0 0;">
+                <i class="bi bi-card-list me-1"></i> Грузы
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link fw-semibold text-secondary" id="files-tab" data-bs-toggle="tab" data-bs-target="#files-pane" type="button" role="tab">
-                📁 Файлы
+            <button class="nav-link fw-semibold text-secondary px-3 py-2" id="files-tab" data-bs-toggle="tab" data-bs-target="#files-pane" type="button" role="tab" style="border-radius: 10px 10px 0 0;">
+                <i class="bi bi-folder2 me-1"></i> Файлы
             </button>
         </li>
     </ul>
 
-    <div class="tab-content card border-0 shadow-sm p-3" id="orderTabContent">
+    <div class="tab-content concept-card p-3" id="orderTabContent" style="border-top-left-radius: 0;">
         <!-- Таб 1: Грузы -->
         <div class="tab-pane fade show active" id="cargo-pane" role="tabpanel">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="py-3">Наименование</th>
-                            <th class="py-3">Количество</th>
-                            <th class="py-3">Габариты</th>
-                            <th class="py-3">Общий вес</th>
+                            <th class="py-3 border-0">Наименование</th>
+                            <th class="py-3 border-0">Количество</th>
+                            <th class="py-3 border-0">Габариты</th>
+                            <th class="py-3 border-0">Общий вес</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for cargo in order.cargoes.all %}
                             <tr>
-                                <td class="fw-medium">{{ cargo.name }}</td>
+                                <td class="fw-medium text-dark">
+                                    <i class="bi bi-box-seam text-warning me-2"></i>{{ cargo.name }}
+                                </td>
                                 <td>{{ cargo.count|default:"1" }}</td>
                                 <td>{{ cargo.size|default:"--" }}</td>
                                 <td class="js-price">{{ cargo.weight_per_unit|default:"--" }} кг.</td>
@@ -262,7 +431,6 @@
     <div class="modal-dialog modal-dialog-centered" style="max-width: 580px;">
         <div class="modal-content border-0 shadow-lg p-4" style="border-radius: 20px;">
             
-            <!-- Заголовок с иконкой предупреждения -->
             <div class="d-flex align-items-center gap-2 mb-2">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#854d0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                     <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
@@ -272,10 +440,8 @@
                 <h5 class="modal-title fw-bold mb-0 text-dark" id="bidConfirmModalLabel">Проверьте введённую цену</h5>
             </div>
 
-            <!-- Подзаголовок -->
             <p class="text-secondary mb-4">Ваша цена существенно отличается от текущей цены торгов.</p>
 
-            <!-- Сравнение цен в две колонки -->
             <div class="row g-3 mb-2">
                 <div class="col-6">
                     <div class="text-secondary small mb-1">Текущая цена</div>
@@ -287,7 +453,6 @@
                 </div>
             </div>
 
-            <!-- Бейдж с процентом отклонения -->
             <div class="mb-4">
                 <span class="badge rounded-pill px-3 py-2 fw-medium" 
                       id="modalDiffBadge" 
@@ -296,12 +461,10 @@
                 </span>
             </div>
 
-            <!-- Вопрос подтверждения -->
             <p class="text-dark mb-4">
                 Вы действительно хотите продолжить с этой ценой? Возможно, вы допустили ошибку при вводе.
             </p>
 
-            <!-- Кнопки друг под другом -->
             <div class="d-grid gap-2">
                 <button type="button" 
                         class="btn btn-dark rounded-pill py-2 fw-semibold" 
@@ -320,7 +483,6 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
@@ -329,14 +491,18 @@
         const detailCard = document.getElementById("tender-card-detail");
         if (!detailCard) return;
 
-        // Парсинг числа из строки
+        // Автоматически добавляем Bootstrap класс form-control полю ввода ставки, если он не задан в Django Form
+        const amountInputEl = document.querySelector('#bid-form [name="amount"]');
+        if (amountInputEl && !amountInputEl.classList.contains('form-control')) {
+            amountInputEl.classList.add('form-control', 'py-2');
+        }
+
         function parsePrice(value) {
             if (value === null || value === undefined) return NaN;
             const cleaned = String(value).replace(/[^\d.,-]/g, '').replace(',', '.');
             return parseFloat(cleaned);
         }
 
-        // Форматирование с пробелами (разделителями разрядов)
         const priceFormatter = new Intl.NumberFormat('ru-RU', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
@@ -352,10 +518,11 @@
         const openingDateStr = detailCard.getAttribute("data-opening-date");
         const endDateStr = detailCard.getAttribute("data-end-date");
         
-        const statusBadge = detailCard.querySelector(".tender-status-badge");
+        // Элементы нового крупного таймера
+        const timerDisplay = detailCard.querySelector(".tender-timer-display");
+        const timerLabel = detailCard.querySelector(".tender-timer-label");
         const lowestBidEl = detailCard.querySelector(".js-lowest-bid");
 
-        // Инициализируем текущую ставку и валюту из DOM
         let currentLowestBid = lowestBidEl ? parsePrice(lowestBidEl.textContent) : NaN;
         if (Number.isNaN(currentLowestBid)) currentLowestBid = 0;
 
@@ -380,7 +547,6 @@
 
                 const enteredAmount = parsePrice(amountInput.value);
 
-                // Проверяем, что введено корректное число и текущая ставка не равна 0
                 if (!Number.isNaN(enteredAmount) && currentLowestBid > 0) {
                     const signedRatio = (enteredAmount - currentLowestBid) / currentLowestBid;
 
@@ -390,12 +556,10 @@
                         const formattedCurrent = `${formatPrice(currentLowestBid)} ${currentCurrency}`;
                         const formattedEntered = `${formatPrice(enteredAmount)} ${currentCurrency}`;
 
-                        // Формируем знак и округлённый процент (например, "−90%" или "+25%")
                         const rawPercent = Math.round(signedRatio * 100);
                         const sign = rawPercent < 0 ? "−" : "+";
                         const absPercent = Math.abs(rawPercent);
 
-                        // Заполняем данные в модальном окне
                         modalCurrentPriceEl.textContent = formattedCurrent;
                         modalEnteredPriceEl.textContent = formattedEntered;
                         modalDiffBadgeEl.textContent = `Отклонение ${sign}${absPercent}%`;
@@ -406,23 +570,21 @@
                 }
             });
 
-            // Кнопка "Подтвердить цену ..."
             confirmSubmitBtn.addEventListener("click", function () {
                 isConfirmed = true;
                 confirmModal.hide();
                 bidForm.submit();
             });
 
-            // Кнопка "Вернуться и исправить" (или закрытие по Esc / клику вне окна)
             confirmModalEl.addEventListener("hidden.bs.modal", function () {
                 if (!isConfirmed && amountInput) {
                     amountInput.focus();
-                    amountInput.select(); // Сразу выделяем введённое число для быстрого исправления
+                    amountInput.select();
                 }
             });
         }
 
-        // --- Логика таймера и обновления ставок ---
+        // --- Логика таймера в формате ЧЧ:ММ:СС (или ДД д ЧЧ:ММ:СС) ---
         if (!openingDateStr || !endDateStr) return;
 
         const openingTime = new Date(openingDateStr).getTime();
@@ -436,7 +598,7 @@
 
             let timeFormat = "";
             if (days > 0) timeFormat += `${days}д `;
-            timeFormat += `${String(hours).padStart(2, '0')}ч ${String(minutes).padStart(2, '0')}м ${String(seconds).padStart(2, '0')}с`;
+            timeFormat += `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             return timeFormat;
         }
 
@@ -445,15 +607,18 @@
 
             if (now < openingTime) {
                 const distance = openingTime - now;
-                statusBadge.innerHTML = `До начала: <span class="fw-bold">${formatTimeRemaining(distance)}</span>`;
-                statusBadge.className = "badge bg-warning text-dark px-3 py-2 fs-6";
+                timerDisplay.textContent = formatTimeRemaining(distance);
+                timerDisplay.style.color = "#d97706"; // Янтарный цвет до начала
+                timerLabel.textContent = "ДО НАЧАЛА ТОРГОВ";
             } else if (now >= openingTime && now < endTime) {
                 const distance = endTime - now;
-                statusBadge.innerHTML = `До окончания: <span class="fw-bold">${formatTimeRemaining(distance)}</span>`;
-                statusBadge.className = "badge bg-success px-3 py-2 fs-6";
+                timerDisplay.textContent = formatTimeRemaining(distance);
+                timerDisplay.style.color = "#b91c1c"; // Акцентный красный при активных торгах
+                timerLabel.textContent = "ДО ОКОНЧАНИЯ";
             } else {
-                statusBadge.textContent = "Торги завершены";
-                statusBadge.className = "badge bg-secondary px-3 py-2 fs-6";
+                timerDisplay.textContent = "00:00:00";
+                timerDisplay.style.color = "#6b7280";
+                timerLabel.textContent = "ТОРГИ ЗАВЕРШЕНЫ";
             }
         }
 
