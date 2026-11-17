@@ -476,15 +476,16 @@
             let isConfirmed = false;
 
             bidForm.addEventListener("submit", function (e) {
-                if (isConfirmed) return;
-                if (!amountInput) return;
-
+                
                 const enteredAmount = parsePrice(amountInput.value);
-                const absDiff = Math.abs(enteredAmount - currentLowestBid);
 
                 if (!Number.isNaN(enteredAmount) && currentLowestBid > 0) {
+                    const absDiff = Math.abs(enteredAmount - currentLowestBid);
                     const signedRatio = (enteredAmount - currentLowestBid) / currentLowestBid;
 
+                    // Модальное окно открывается ТОЛЬКО если:
+                    // 1. Отклонение по модулю больше 10% (> 0.10)
+                    // 2. И при этом абсолютная разница больше шага цены (absDiff > priceStep)
                     if (Math.abs(signedRatio) > 0.10 && absDiff > priceStep) {
                         e.preventDefault();
 
