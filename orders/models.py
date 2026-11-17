@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db import models
 from django.conf import settings
 
@@ -39,6 +41,21 @@ class Order(models.Model):
     def total_weight(self):
         """Суммарный вес всех грузов заказа"""
         return sum(cargo.count * cargo.weight_per_unit for cargo in self.cargoes.all())
+
+    @property
+    def calculated_end_date(self):
+        if not self.tender_opening_date or not self.time_to_end:
+            return self.tender_ending_date
+
+        # Получаем последнюю ставку (замените bids на ваше related_name для ставок)
+        last_bid = self.bids.order_by('-created_at').first()
+
+        # Если time_to_end — это DurationField:
+        delta = timedelta(minutes=self.time_to_end)
+
+        if last_bid:
+            return last_bid.created_at + delta
+        return self.tender_opening_date + delta
     
     class Meta:
         verbose_name = "Заказ / Тендер"

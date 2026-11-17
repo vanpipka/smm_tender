@@ -112,8 +112,8 @@ class OrderDetailView(DetailView):
         order = self.object
         is_tender_active = False
         
-        if order.tender_opening_date and order.tender_ending_date:
-            if order.tender_opening_date <= now <= order.tender_ending_date:
+        if order.tender_opening_date and order.calculated_end_date:
+            if order.tender_opening_date <= now <= order.calculated_end_date:
                 is_tender_active = True
 
         context['is_tender_active'] = is_tender_active
@@ -169,12 +169,15 @@ def order_bids_api(request, pk):
     # Ставка текущего пользователя
     user_bid = order.bids.filter(client=request.user).values_list('amount', flat=True).first()
 
+    end_date = order.calculated_end_date
+
     return JsonResponse({
         'initial_price': float(order.initial_price) if order.initial_price else None,
         'lowest_bid': float(lowest_bid) if lowest_bid else None,
         'user_bid': float(user_bid) if user_bid else None,
         'currency': order.tender_currency,
         'is_user_bid': True if user_bid == lowest_bid and user_bid is not None else False,
+        "end_date": end_date.isoformat() if end_date else None,
     })
 
 

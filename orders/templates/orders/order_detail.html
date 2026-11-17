@@ -33,7 +33,8 @@
          id="tender-card-detail"
          data-order-id="{{ order.id }}"
          data-opening-date="{{ order.tender_opening_date|date:'c' }}"
-         data-end-date="{{ order.tender_ending_date|date:'c' }}">
+         data-end-date="{{ order.calculated_end_date|date:'c' }}">
+         
         <div class="card-body p-4">
             
             <!-- Центральный крупный таймер -->
@@ -458,7 +459,7 @@
         }
 
         const bidOwnerBadgeEl = document.getElementById("current-bid-owner-badge");
-        
+
         const orderId = detailCard.getAttribute("data-order-id");
         const openingDateStr = detailCard.getAttribute("data-opening-date");
         const endDateStr = detailCard.getAttribute("data-end-date");
