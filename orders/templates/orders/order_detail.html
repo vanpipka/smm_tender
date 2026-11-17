@@ -257,22 +257,66 @@
     </div>
 </div>
 
+<!-- Модальное окно подтверждения ставки по макету -->
 <div class="modal fade" id="bidConfirmModal" tabindex="-1" aria-labelledby="bidConfirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-warning-subtle">
-                <h5 class="modal-title fw-bold" id="bidConfirmModalLabel">Подтверждение ставки</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 580px;">
+        <div class="modal-content border-0 shadow-lg p-4" style="border-radius: 20px;">
+            
+            <!-- Заголовок с иконкой предупреждения -->
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#854d0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                    <path d="M12 9v4"/>
+                    <path d="M12 17h.01"/>
+                </svg>
+                <h5 class="modal-title fw-bold mb-0 text-dark" id="bidConfirmModalLabel">Проверьте введённую цену</h5>
             </div>
-            <div class="modal-body">
-                <p class="mb-0" id="bidConfirmMessage">
-                    Предложенная цена более чем на 10% отличается от текущей, возможно вы ошиблись при вводе.
-                </p>
+
+            <!-- Подзаголовок -->
+            <p class="text-secondary mb-4">Ваша цена существенно отличается от текущей цены торгов.</p>
+
+            <!-- Сравнение цен в две колонки -->
+            <div class="row g-3 mb-2">
+                <div class="col-6">
+                    <div class="text-secondary small mb-1">Текущая цена</div>
+                    <div class="fs-3 fw-bold text-dark" id="modalCurrentPrice">--</div>
+                </div>
+                <div class="col-6">
+                    <div class="text-secondary small mb-1">Ваша цена</div>
+                    <div class="fs-3 fw-bold" style="color: #ef4444;" id="modalEnteredPrice">--</div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Вернуться</button>
-                <button type="button" class="btn btn-primary" id="confirmBidSubmitBtn">Продолжить</button>
+
+            <!-- Бейдж с процентом отклонения -->
+            <div class="mb-4">
+                <span class="badge rounded-pill px-3 py-2 fw-medium" 
+                      id="modalDiffBadge" 
+                      style="background-color: #fee2e2; color: #dc2626; font-size: 0.875rem;">
+                    Отклонение 0%
+                </span>
             </div>
+
+            <!-- Вопрос подтверждения -->
+            <p class="text-dark mb-4">
+                Вы действительно хотите продолжить с этой ценой? Возможно, вы допустили ошибку при вводе.
+            </p>
+
+            <!-- Кнопки друг под другом -->
+            <div class="d-grid gap-2">
+                <button type="button" 
+                        class="btn btn-dark rounded-pill py-2 fw-semibold" 
+                        id="confirmBidSubmitBtn"
+                        style="background-color: #09090b; border-color: #09090b;">
+                    Подтвердить цену
+                </button>
+                <button type="button" 
+                        class="btn btn-outline-secondary rounded-pill py-2 fw-medium text-dark" 
+                        data-bs-dismiss="modal"
+                        style="border-color: #d4d4d8;">
+                    Вернуться и исправить
+                </button>
+            </div>
+
         </div>
     </div>
 </div>
@@ -285,14 +329,14 @@
         const detailCard = document.getElementById("tender-card-detail");
         if (!detailCard) return;
 
-        // Вспомогательная функция парсинга числа из строки (убирает пробелы и меняет запятую на точку)
+        // Парсинг числа из строки
         function parsePrice(value) {
             if (value === null || value === undefined) return NaN;
             const cleaned = String(value).replace(/[^\d.,-]/g, '').replace(',', '.');
             return parseFloat(cleaned);
         }
 
-        // Форматирование числа с разделителями разрядов
+        // Форматирование с пробелами (разделителями разрядов)
         const priceFormatter = new Intl.NumberFormat('ru-RU', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
@@ -311,16 +355,18 @@
         const statusBadge = detailCard.querySelector(".tender-status-badge");
         const lowestBidEl = detailCard.querySelector(".js-lowest-bid");
 
-        // Храним актуальную числовую ставку для проверки формы (инициализируем из DOM)
+        // Инициализируем текущую ставку и валюту из DOM
         let currentLowestBid = lowestBidEl ? parsePrice(lowestBidEl.textContent) : NaN;
-        if (Number.isNaN(currentLowestBid)) {
-            currentLowestBid = 0;
-        }
+        if (Number.isNaN(currentLowestBid)) currentLowestBid = 0;
 
-        // --- Логика проверки отклонения цены (> 10%) при отправке формы ---
+        let currentCurrency = "{{ order.tender_currency|default:'руб.' }}";
+
+        // --- Логика модального окна при отклонении цены > 10% ---
         const bidForm = document.getElementById("bid-form");
         const confirmModalEl = document.getElementById("bidConfirmModal");
-        const confirmMessageEl = document.getElementById("bidConfirmMessage");
+        const modalCurrentPriceEl = document.getElementById("modalCurrentPrice");
+        const modalEnteredPriceEl = document.getElementById("modalEnteredPrice");
+        const modalDiffBadgeEl = document.getElementById("modalDiffBadge");
         const confirmSubmitBtn = document.getElementById("confirmBidSubmitBtn");
 
         if (bidForm && confirmModalEl && typeof bootstrap !== "undefined") {
@@ -329,39 +375,49 @@
             let isConfirmed = false;
 
             bidForm.addEventListener("submit", function (e) {
-                // Если пользователь уже нажал "Продолжить" — пропускаем проверку
                 if (isConfirmed) return;
-
                 if (!amountInput) return;
+
                 const enteredAmount = parsePrice(amountInput.value);
 
                 // Проверяем, что введено корректное число и текущая ставка не равна 0
                 if (!Number.isNaN(enteredAmount) && currentLowestBid > 0) {
-                    const diffRatio = Math.abs(enteredAmount - currentLowestBid) / currentLowestBid;
+                    const signedRatio = (enteredAmount - currentLowestBid) / currentLowestBid;
 
-                    if (diffRatio > 0.10) {
-                        e.preventDefault(); // Останавливаем отправку формы
+                    if (Math.abs(signedRatio) > 0.10) {
+                        e.preventDefault();
 
-                        const diffPercent = (diffRatio * 100).toFixed(1).replace('.', ',');
-                        confirmMessageEl.textContent = 
-                            `Предложенная цена более чем на ${diffPercent}% отличается от текущей, возможно вы ошиблись при вводе.`;
-                        
+                        const formattedCurrent = `${formatPrice(currentLowestBid)} ${currentCurrency}`;
+                        const formattedEntered = `${formatPrice(enteredAmount)} ${currentCurrency}`;
+
+                        // Формируем знак и округлённый процент (например, "−90%" или "+25%")
+                        const rawPercent = Math.round(signedRatio * 100);
+                        const sign = rawPercent < 0 ? "−" : "+";
+                        const absPercent = Math.abs(rawPercent);
+
+                        // Заполняем данные в модальном окне
+                        modalCurrentPriceEl.textContent = formattedCurrent;
+                        modalEnteredPriceEl.textContent = formattedEntered;
+                        modalDiffBadgeEl.textContent = `Отклонение ${sign}${absPercent}%`;
+                        confirmSubmitBtn.textContent = `Подтвердить цену ${formattedEntered}`;
+
                         confirmModal.show();
                     }
                 }
             });
 
-            // Кнопка "Продолжить" — отправляем форму
+            // Кнопка "Подтвердить цену ..."
             confirmSubmitBtn.addEventListener("click", function () {
                 isConfirmed = true;
                 confirmModal.hide();
                 bidForm.submit();
             });
 
-            // После закрытия модалки ("Вернуться") возвращаем фокус в поле ввода
+            // Кнопка "Вернуться и исправить" (или закрытие по Esc / клику вне окна)
             confirmModalEl.addEventListener("hidden.bs.modal", function () {
                 if (!isConfirmed && amountInput) {
                     amountInput.focus();
+                    amountInput.select(); // Сразу выделяем введённое число для быстрого исправления
                 }
             });
         }
@@ -405,13 +461,12 @@
             fetch(`/api/${orderId}/bids/`)
                 .then(response => response.json())
                 .then(data => {
-                    const currency = data.currency || 'RUB';
+                    currentCurrency = data.currency || currentCurrency;
                     if (data.lowest_bid !== null) {
-                        // Обновляем актуальное значение для проверки формы
                         const parsedBid = parsePrice(data.lowest_bid);
                         currentLowestBid = Number.isNaN(parsedBid) ? 0 : parsedBid;
 
-                        const newText = `${formatPrice(data.lowest_bid)} ${currency}`;
+                        const newText = `${formatPrice(data.lowest_bid)} ${currentCurrency}`;
                         if (lowestBidEl.textContent.trim() !== newText) {
                             lowestBidEl.textContent = newText;
                             lowestBidEl.classList.add('text-success');
@@ -419,7 +474,7 @@
                         }
                     } else {
                         currentLowestBid = 0;
-                        lowestBidEl.textContent = `${formatPrice(0)} ${currency}`;
+                        lowestBidEl.textContent = `${formatPrice(0)} ${currentCurrency}`;
                     }
                 })
                 .catch(err => console.error(err));
