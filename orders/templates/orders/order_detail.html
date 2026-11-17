@@ -74,7 +74,7 @@
                     {% endfor %}
                 {% endif %}
 
-                <form method="post" class="row g-3 align-items-center">
+                <form method="post" id="bid-form" class="row g-3 align-items-center">
                     {% csrf_token %}
                     <div class="col-auto flex-grow-1">
                         {{ form.amount }}
@@ -86,6 +86,7 @@
                         <button type="submit" class="btn btn-primary px-4">Подать ставку</button>
                     </div>
                 </form>
+
                 {% if form.non_field_errors %}
                     <div class="alert alert-danger mt-3 mb-0 small">{{ form.non_field_errors }}</div>
                 {% endif %}
@@ -255,15 +256,53 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="bidConfirmModal" tabindex="-1" aria-labelledby="bidConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning-subtle">
+                <h5 class="modal-title fw-bold" id="bidConfirmModalLabel">Подтверждение ставки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="bidConfirmMessage">
+                    Предложенная цена более чем на 10% отличается от текущей, возможно вы ошиблись при вводе.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Вернуться</button>
+                <button type="button" class="btn btn-primary" id="confirmBidSubmitBtn">Продолжить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-
     document.addEventListener("DOMContentLoaded", function () {
-        
         const detailCard = document.getElementById("tender-card-detail");
         if (!detailCard) return;
+
+        // Вспомогательная функция парсинга числа из строки (убирает пробелы и меняет запятую на точку)
+        function parsePrice(value) {
+            if (value === null || value === undefined) return NaN;
+            const cleaned = String(value).replace(/[^\d.,-]/g, '').replace(',', '.');
+            return parseFloat(cleaned);
+        }
+
+        // Форматирование числа с разделителями разрядов
+        const priceFormatter = new Intl.NumberFormat('ru-RU', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+        function formatPrice(value) {
+            const num = parsePrice(value);
+            if (Number.isNaN(num)) return value;
+            return priceFormatter.format(num);
+        }
 
         const orderId = detailCard.getAttribute("data-order-id");
         const openingDateStr = detailCard.getAttribute("data-opening-date");
@@ -271,13 +310,68 @@
         
         const statusBadge = detailCard.querySelector(".tender-status-badge");
         const lowestBidEl = detailCard.querySelector(".js-lowest-bid");
-        
+
+        // Храним актуальную числовую ставку для проверки формы (инициализируем из DOM)
+        let currentLowestBid = lowestBidEl ? parsePrice(lowestBidEl.textContent) : NaN;
+        if (Number.isNaN(currentLowestBid)) {
+            currentLowestBid = 0;
+        }
+
+        // --- Логика проверки отклонения цены (> 10%) при отправке формы ---
+        const bidForm = document.getElementById("bid-form");
+        const confirmModalEl = document.getElementById("bidConfirmModal");
+        const confirmMessageEl = document.getElementById("bidConfirmMessage");
+        const confirmSubmitBtn = document.getElementById("confirmBidSubmitBtn");
+
+        if (bidForm && confirmModalEl && typeof bootstrap !== "undefined") {
+            const amountInput = bidForm.querySelector('[name="amount"]');
+            const confirmModal = new bootstrap.Modal(confirmModalEl);
+            let isConfirmed = false;
+
+            bidForm.addEventListener("submit", function (e) {
+                // Если пользователь уже нажал "Продолжить" — пропускаем проверку
+                if (isConfirmed) return;
+
+                if (!amountInput) return;
+                const enteredAmount = parsePrice(amountInput.value);
+
+                // Проверяем, что введено корректное число и текущая ставка не равна 0
+                if (!Number.isNaN(enteredAmount) && currentLowestBid > 0) {
+                    const diffRatio = Math.abs(enteredAmount - currentLowestBid) / currentLowestBid;
+
+                    if (diffRatio > 0.10) {
+                        e.preventDefault(); // Останавливаем отправку формы
+
+                        const diffPercent = (diffRatio * 100).toFixed(1).replace('.', ',');
+                        confirmMessageEl.textContent = 
+                            `Предложенная цена более чем на ${diffPercent}% отличается от текущей, возможно вы ошиблись при вводе.`;
+                        
+                        confirmModal.show();
+                    }
+                }
+            });
+
+            // Кнопка "Продолжить" — отправляем форму
+            confirmSubmitBtn.addEventListener("click", function () {
+                isConfirmed = true;
+                confirmModal.hide();
+                bidForm.submit();
+            });
+
+            // После закрытия модалки ("Вернуться") возвращаем фокус в поле ввода
+            confirmModalEl.addEventListener("hidden.bs.modal", function () {
+                if (!isConfirmed && amountInput) {
+                    amountInput.focus();
+                }
+            });
+        }
+
+        // --- Логика таймера и обновления ставок ---
         if (!openingDateStr || !endDateStr) return;
 
         const openingTime = new Date(openingDateStr).getTime();
         const endTime = new Date(endDateStr).getTime();
 
-    
         function formatTimeRemaining(distance) {
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -313,6 +407,10 @@
                 .then(data => {
                     const currency = data.currency || 'RUB';
                     if (data.lowest_bid !== null) {
+                        // Обновляем актуальное значение для проверки формы
+                        const parsedBid = parsePrice(data.lowest_bid);
+                        currentLowestBid = Number.isNaN(parsedBid) ? 0 : parsedBid;
+
                         const newText = `${formatPrice(data.lowest_bid)} ${currency}`;
                         if (lowestBidEl.textContent.trim() !== newText) {
                             lowestBidEl.textContent = newText;
@@ -320,6 +418,7 @@
                             setTimeout(() => lowestBidEl.classList.remove('text-success'), 1500);
                         }
                     } else {
+                        currentLowestBid = 0;
                         lowestBidEl.textContent = `${formatPrice(0)} ${currency}`;
                     }
                 })
@@ -332,6 +431,5 @@
         fetchPrices();
         setInterval(fetchPrices, 5000);
     });
-
 </script>
 {% endblock %}
