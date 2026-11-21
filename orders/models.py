@@ -43,6 +43,11 @@ class Order(models.Model):
         return sum(cargo.count * cargo.weight_per_unit for cargo in self.cargoes.all())
 
     @property
+    def total_places(self):
+        """Суммарное количество мест всех грузов заказа"""
+        return sum(cargo.count for cargo in self.cargoes.all())
+
+    @property
     def calculated_end_date(self):
         if not self.tender_opening_date or self.time_to_end is None:
             return self.tender_ending_date
