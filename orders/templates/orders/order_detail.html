@@ -198,6 +198,37 @@
         </div>
     </div>
 
+    <!-- Условия оплаты и поставки -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="info-stat-card">
+                <div class="info-stat-icon">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+                <div>
+                    <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.03em;">УСЛОВИЯ ОПЛАТЫ:</div>
+                    <div class="fw-semibold text-dark mt-1" style="font-size: 0.95rem;">
+                        {{ order.payment_terms|default:"--" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="info-stat-card">
+                <div class="info-stat-icon">
+                    <i class="bi bi-file-earmark-check"></i>
+                </div>
+                <div>
+                    <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.03em;">УСЛОВИЯ ПОСТАВКИ:</div>
+                    <div class="fw-semibold text-dark mt-1" style="font-size: 0.95rem;">
+                        {{ order.delivery_terms|default:"--" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Секция: Маршрут -->
     <h5 class="fw-bold mb-3 text-dark">Маршрут</h5>
     <div class="concept-card mb-4">

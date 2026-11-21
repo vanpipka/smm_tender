@@ -34,6 +34,9 @@ class Order(models.Model):
     
     arrival_period = models.CharField(max_length=100, blank=True, null=True, verbose_name="Период прибытия")
     departure_period = models.CharField(max_length=100, blank=True, null=True, verbose_name="Период отправления")
+
+    payment_terms = models.TextField(blank=True, null=True, verbose_name="Условия оплаты", default="")
+    delivery_terms = models.TextField(blank=True, null=True, verbose_name="Условия доставки", default="")
     
     deleted = models.BooleanField(default=False, verbose_name="Удален")
 
