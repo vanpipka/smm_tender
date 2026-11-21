@@ -28,7 +28,8 @@ class OrderSerializer(serializers.ModelSerializer):
             'tender_opening_date', 'time_to_end', 'tender_ending_date',
             'arrivals_custom', 'departures_custom', 'cargo_cost',
             'cargo_currency', 'tender_currency', 'arrival_period',
-            'departure_period', 'deleted', 'total_weight', 'cargoes'
+            'departure_period', 'deleted', 'total_weight', 'cargoes',
+            'payment_terms', 'delivery_terms'
         ]
 
     def create(self, validated_data):
