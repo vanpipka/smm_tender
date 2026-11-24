@@ -8,8 +8,7 @@ class OrderAccessInline(admin.TabularInline):
     fk_name = "order"  # Обязательно, т.к. у OrderAccess есть FK на Order (если их несколько)
     extra = 1
     autocomplete_fields = ["user"]  # Удобный поиск пользователя (требует search_fields в UserAdmin)
-    readonly_fields = ["granted_at", "granted_by"]
-    fields = ["user", "granted_by", "granted_at"]
+    fields = ["user"]
 
 
 class CargoInline(admin.TabularInline):
