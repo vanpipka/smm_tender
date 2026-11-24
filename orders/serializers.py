@@ -16,14 +16,14 @@ class CargoSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'count', 'size', 'weight_per_unit']
 
 
-class OrderAccessSerializer(serializers.ModelSerializer):
-    """Сериализатор для отображения детальной информации о выданных правах."""
-    username = serializers.CharField(source="user.username", read_only=True)
-
-    class Meta:
-        model = OrderAccess
-        fields = ["id", "user", "username"]
-        read_only_fields = ["id"]
+#class OrderAccessSerializer(serializers.ModelSerializer):
+#    """Сериализатор для отображения детальной информации о выданных правах."""
+#    username = serializers.CharField(source="user.username", read_only=True)
+#
+#    class Meta:
+#        model = OrderAccess
+#        fields = ["id", "user", "username"]
+#        read_only_fields = ["id"]
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -39,8 +39,8 @@ class OrderSerializer(serializers.ModelSerializer):
         write_only=True,
     )
 
-    # 2. ДЛЯ ЧТЕНИЯ: отдаем подробный список доступов (кто, когда и кем добавлен)
-    user_accesses = OrderAccessSerializer(many=True, read_only=True)
+    # 2. ДЛЯ ЧТЕНИЯ: отдаем подробный список доступов (с именами пользователей) через вложенный сериализатор
+    #user_accesses = OrderAccessSerializer(many=True, read_only=True)
 
     class Meta:
         model = Order
@@ -52,7 +52,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'cargo_currency', 'tender_currency', 'arrival_period',
             'departure_period', 'deleted', 'total_weight', 'cargoes',
             'payment_terms', 'delivery_terms',
-            'allowed_users', 'user_accesses',
+            'allowed_users', #'user_accesses',
         ]
 
     def create(self, validated_data):
