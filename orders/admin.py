@@ -1,5 +1,15 @@
 from django.contrib import admin
-from .models import Order, Cargo, Bid, OrderFile
+from .models import Order, Cargo, Bid, OrderAccess, OrderFile
+
+
+class OrderAccessInline(admin.TabularInline):
+    """Встроенная таблица выдачи прав внутри карточки заказа."""
+    model = OrderAccess
+    fk_name = "order"  # Обязательно, т.к. у OrderAccess есть FK на Order (если их несколько)
+    extra = 1
+    autocomplete_fields = ["user"]  # Удобный поиск пользователя (требует search_fields в UserAdmin)
+    readonly_fields = ["granted_at", "granted_by"]
+    fields = ["user", "granted_by", "granted_at"]
 
 
 class CargoInline(admin.TabularInline):
@@ -19,7 +29,14 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ('number', 'date', 'sender', 'recipient', 'initial_price', 'tender_currency', 'deleted')
     list_filter = ('deleted', 'tender_currency', 'date')
     search_fields = ('number', 'sender', 'recipient')
-    inlines = [CargoInline, OrderFileInline]  # Подключаем грузы и файлы таблицей внутрь заказа
+    inlines = [CargoInline, OrderFileInline, OrderAccessInline]  # Подключаем грузы, файлы и доступ пользователей таблицей внутрь заказа
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("user_accesses", "cargoes", "files")
+
+    @admin.display(description="Пользователей с доступом")
+    def get_allowed_users_count(self, obj):
+        return obj.user_accesses.count()
 
 
 @admin.register(Cargo)
