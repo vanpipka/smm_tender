@@ -1,3 +1,4 @@
+from gunicorn.config import User
 from rest_framework import serializers
 from .models import Order, Cargo, OrderFile, OrderAccess
 
@@ -15,10 +16,31 @@ class CargoSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'count', 'size', 'weight_per_unit']
 
 
+class OrderAccessSerializer(serializers.ModelSerializer):
+    """Сериализатор для отображения детальной информации о выданных правах."""
+    username = serializers.CharField(source="user.username", read_only=True)
+
+    class Meta:
+        model = OrderAccess
+        fields = ["id", "user", "username"]
+        read_only_fields = ["id"]
+
+
 class OrderSerializer(serializers.ModelSerializer):
     # Вложенный сериализатор для создания/получения грузов (связан через related_name='cargoes')
     cargoes = CargoSerializer(many=True, required=False)
     total_weight = serializers.ReadOnlyField() # Свойство-считалка доступно только для чтения
+
+    # 1. ДЛЯ ЗАПИСИ: принимаем список ID пользователей, которым разрешен доступ (например: [1, 5, 12])
+    allowed_users = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        many=True,
+        required=False,
+        write_only=True,
+    )
+
+    # 2. ДЛЯ ЧТЕНИЯ: отдаем подробный список доступов (кто, когда и кем добавлен)
+    user_accesses = OrderAccessSerializer(many=True, read_only=True)
 
     class Meta:
         model = Order
@@ -29,7 +51,8 @@ class OrderSerializer(serializers.ModelSerializer):
             'arrivals_custom', 'departures_custom', 'cargo_cost',
             'cargo_currency', 'tender_currency', 'arrival_period',
             'departure_period', 'deleted', 'total_weight', 'cargoes',
-            'payment_terms', 'delivery_terms'
+            'payment_terms', 'delivery_terms',
+            'allowed_users', 'user_accesses',
         ]
 
     def create(self, validated_data):
@@ -72,7 +95,7 @@ class OrderSerializer(serializers.ModelSerializer):
         # 3. Обновляем доступ пользователей (если передан список)
         if allowed_users is not None:
             self._sync_user_accesses(instance, allowed_users)
-            
+
         return instance
 
     def _sync_user_accesses(self, order, users):
