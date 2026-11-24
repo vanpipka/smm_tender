@@ -32,12 +32,12 @@ class OrderSerializer(serializers.ModelSerializer):
     total_weight = serializers.ReadOnlyField() # Свойство-считалка доступно только для чтения
 
     # 1. ДЛЯ ЗАПИСИ: принимаем список ID пользователей, которым разрешен доступ (например: [1, 5, 12])
-    #allowed_users = serializers.PrimaryKeyRelatedField(
-    #    queryset=User.objects.all(),
-    #    many=True,
-    #    required=False,
-    #    write_only=True,
-    #)
+    allowed_users = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        many=True,
+        required=False,
+        write_only=True,
+    )
 
     # 2. ДЛЯ ЧТЕНИЯ: отдаем подробный список доступов (с именами пользователей) через вложенный сериализатор
     #user_accesses = OrderAccessSerializer(many=True, read_only=True)
