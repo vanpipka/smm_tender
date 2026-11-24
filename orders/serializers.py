@@ -1,4 +1,5 @@
-from gunicorn.config import User
+
+from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import Order, Cargo, OrderFile, OrderAccess
 
@@ -16,14 +17,14 @@ class CargoSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'count', 'size', 'weight_per_unit']
 
 
-#class OrderAccessSerializer(serializers.ModelSerializer):
-#    """Сериализатор для отображения детальной информации о выданных правах."""
-#    username = serializers.CharField(source="user.username", read_only=True)
-#
-#    class Meta:
-#        model = OrderAccess
-#        fields = ["id", "user", "username"]
-#        read_only_fields = ["id"]
+class OrderAccessSerializer(serializers.ModelSerializer):
+    """Сериализатор для отображения детальной информации о выданных правах."""
+    username = serializers.CharField(source="user.username", read_only=True)
+
+    class Meta:
+        model = OrderAccess
+        fields = ["id", "user", "username"]
+        read_only_fields = ["id"]
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -52,7 +53,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'cargo_currency', 'tender_currency', 'arrival_period',
             'departure_period', 'deleted', 'total_weight', 'cargoes',
             'payment_terms', 'delivery_terms',
-            #'allowed_users', #'user_accesses',
+            'allowed_users', #'user_accesses',
         ]
 
     def create(self, validated_data):
