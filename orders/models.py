@@ -40,6 +40,14 @@ class Order(models.Model):
     
     deleted = models.BooleanField(default=False, verbose_name="Удален")
 
+    allowed_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through="OrderAccess",
+        through_fields=("order", "user"),
+        related_name="accessible_orders",
+        verbose_name="Пользователи с доступом",
+    )
+
     @property
     def total_weight(self):
         """Суммарный вес всех грузов заказа"""
@@ -156,3 +164,37 @@ class OrderFile(models.Model):
 
     def __str__(self):
         return self.name or f"Файл к заказу №{self.order.number}"
+
+
+class OrderAccess(models.Model):
+    """Таблица разграничения видимости заказов для пользователей."""
+
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="user_accesses",
+        verbose_name="Заказ",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="order_accesses",
+        verbose_name="Пользователь",
+    )
+
+    class Meta:
+        verbose_name = "Доступ к заказу"
+        verbose_name_plural = "Доступы к заказам"
+        # Защита от дублирования прав для одной и той же пары (заказ + пользователь)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["order", "user"],
+                name="unique_order_user_access",
+            )
+        ]
+        indexes = [
+            models.Index(fields=["user", "order"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user} -> {self.order}"

@@ -37,8 +37,9 @@ class OrderListView(ListView):
             order=OuterRef('pk'), client=user
         ).values('amount')[:1]
 
-        # Базовый queryset (не удаленные)
-        queryset = Order.objects.filter(deleted=False).annotate(
+
+        # Базовый queryset для пользователя (не удаленные)
+        queryset = Order.objects.filter(deleted=False).filter(allowed_users=user).annotate(
             lowest_bid=Min('bids__amount'), user_bid=Subquery(user_bid_subquery)
         )
 
@@ -98,7 +99,7 @@ class OrderDetailView(DetailView):
             order=OuterRef('pk'), client=user
         ).values('amount')[:1]
 
-        return Order.objects.filter(deleted=False).annotate(
+        return Order.objects.filter(deleted=False).filter(allowed_users=user).annotate(
             lowest_bid=Min('bids__amount'),
             user_bid=Subquery(user_bid_subquery)
         ).prefetch_related('files', 'cargoes')
@@ -221,10 +222,22 @@ def admin_bids_list(request):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.filter(deleted=False).prefetch_related('cargoes')
+
     serializer_class = OrderSerializer
     permission_classes = [IsAdminUser]
 
+    def get_queryset(self):
+        user = self.request.user
+        qs = Order.objects.filter(deleted=False).prefetch_related(
+            "cargoes",
+            "user_accesses__user",
+        )
+
+        if not user.is_superuser:
+            qs = qs.filter(allowed_users=user)
+
+        return qs.distinct()
+    
 
 class OrderFileListCreateView(generics.ListCreateAPIView):
     serializer_class = OrderFileSerializer

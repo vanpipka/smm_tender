@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Order, Cargo, OrderFile
+from .models import Order, Cargo, OrderFile, OrderAccess
 
 
 class OrderFileSerializer(serializers.ModelSerializer):
@@ -35,19 +35,25 @@ class OrderSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Извлекаем данные грузов из запроса, если они есть
         cargoes_data = validated_data.pop('cargoes', [])
-        
+        allowed_users = validated_data.pop('allowed_users', None)
+
         # Создаем сам заказ
         order = Order.objects.create(**validated_data)
         
         # Создаем связанные грузы
         for cargo_data in cargoes_data:
             Cargo.objects.create(order=order, **cargo_data)
-            
+
+        # Создаем связанные пользователи с доступом
+        if allowed_users is not None:
+            self._sync_user_accesses(order, allowed_users)
+
         return order
 
     def update(self, instance, validated_data):
         # Извлекаем данные грузов, если они переданы в запросе
         cargoes_data = validated_data.pop('cargoes', None)
+        allowed_users = validated_data.pop('allowed_users', None)
 
         # 1. Обновляем основные поля заказа
         for attr, value in validated_data.items():
@@ -62,4 +68,31 @@ class OrderSerializer(serializers.ModelSerializer):
             for cargo_data in cargoes_data:
                 Cargo.objects.create(order=instance, **cargo_data)
 
+
+        # 3. Обновляем доступ пользователей (если передан список)
+        if allowed_users is not None:
+            self._sync_user_accesses(instance, allowed_users)
+            
         return instance
+
+    def _sync_user_accesses(self, order, users):
+        """Синхронизирует записи в промежуточной таблице OrderAccess с сохранением granted_by."""
+        request = self.context.get("request")
+
+        target_user_ids = {user.id for user in users}
+        existing_user_ids = set(
+            order.user_accesses.values_list("user_id", flat=True)
+        )
+
+        # Удаляем доступ у тех, кого убрали из списка
+        to_remove = existing_user_ids - target_user_ids
+        if to_remove:
+            order.user_accesses.filter(user_id__in=to_remove).delete()
+
+        # Добавляем доступ новым пользователям
+        to_add = target_user_ids - existing_user_ids
+        if to_add:
+            OrderAccess.objects.bulk_create([
+                OrderAccess(order=order, user_id=user_id)
+                for user_id in to_add
+            ])
