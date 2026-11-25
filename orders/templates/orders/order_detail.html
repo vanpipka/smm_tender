@@ -199,31 +199,70 @@
     </div>
 
     <!-- Условия оплаты и поставки -->
+    <!-- Условия оплаты и поставки (чистый Bootstrap + Django фильтры) -->
     <div class="row g-3 mb-4">
+        <!-- Условия оплаты -->
         <div class="col-md-6">
-            <div class="info-stat-card">
+            <div class="info-stat-card align-items-start">
                 <div class="info-stat-icon">
                     <i class="bi bi-credit-card"></i>
                 </div>
-                <div>
+                <div class="flex-grow-1">
                     <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.03em;">УСЛОВИЯ ОПЛАТЫ:</div>
-                    <div class="fw-semibold text-dark mt-1" style="font-size: 0.95rem;">
-                        {{ order.payment_terms|default:"--" }}
-                    </div>
+                    
+                    {% if order.payment_terms|length > 140 %}
+                        <!-- Короткий превью-текст (исчезает при раскрытии) -->
+                        <div class="collapse show payment-terms-collapse fw-semibold text-dark mt-1" style="font-size: 0.95rem;">
+                            {{ order.payment_terms|truncatechars:140 }}
+                        </div>
+                        <!-- Полный текст (появляется при раскрытии) -->
+                        <div class="collapse payment-terms-collapse fw-semibold text-dark mt-1" style="font-size: 0.95rem;">
+                            {{ order.payment_terms }}
+                        </div>
+                        <a class="small text-decoration-none d-inline-block mt-1"
+                        data-bs-toggle="collapse"
+                        href=".payment-terms-collapse"
+                        role="button"
+                        aria-expanded="false">
+                            Подробнее / Свернуть
+                        </a>
+                    {% else %}
+                        <div class="fw-semibold text-dark mt-1" style="font-size: 0.95rem;">
+                            {{ order.payment_terms|default:"--" }}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
+        <!-- Условия поставки -->
         <div class="col-md-6">
-            <div class="info-stat-card">
+            <div class="info-stat-card align-items-start">
                 <div class="info-stat-icon">
                     <i class="bi bi-file-earmark-check"></i>
                 </div>
-                <div>
+                <div class="flex-grow-1">
                     <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.03em;">УСЛОВИЯ ПОСТАВКИ:</div>
-                    <div class="fw-semibold text-dark mt-1" style="font-size: 0.95rem;">
-                        {{ order.delivery_terms|default:"--" }}
-                    </div>
+                    
+                    {% if order.delivery_terms|length > 140 %}
+                        <div class="collapse show delivery-terms-collapse fw-semibold text-dark mt-1" style="font-size: 0.95rem;">
+                            {{ order.delivery_terms|truncatechars:140 }}
+                        </div>
+                        <div class="collapse delivery-terms-collapse fw-semibold text-dark mt-1" style="font-size: 0.95rem;">
+                            {{ order.delivery_terms }}
+                        </div>
+                        <a class="small text-decoration-none d-inline-block mt-1"
+                        data-bs-toggle="collapse"
+                        href=".delivery-terms-collapse"
+                        role="button"
+                        aria-expanded="false">
+                            Подробнее / Свернуть
+                        </a>
+                    {% else %}
+                        <div class="fw-semibold text-dark mt-1" style="font-size: 0.95rem;">
+                            {{ order.delivery_terms|default:"--" }}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
