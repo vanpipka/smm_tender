@@ -549,6 +549,8 @@
             let isConfirmed = false;
 
             bidForm.addEventListener("submit", function (e) {
+
+                if (isConfirmed) return;
                 
                 const enteredAmount = parsePrice(amountInput.value);
 
@@ -711,8 +713,10 @@
                             updateBidOwnerStatus(data.is_user_bid, true);
                         }
                     } else {
-                        currentLowestBid = 0;
-                        lowestBidEl.textContent = `${formatPrice(0)} ${currentCurrency}`;
+                        currentLowestBid = initialPrice;
+                        lowestBidEl.textContent = initialPrice > 0 
+                            ? `${formatPrice(initialPrice)} ${currentCurrency}` 
+                            : "--";
                         updateBidOwnerStatus(false, false);
                     }
                 })
