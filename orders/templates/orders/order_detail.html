@@ -553,11 +553,9 @@
 
                 if (!Number.isNaN(enteredAmount) && !Number.isNaN(currentLowestBid)) {
                     const absDiff = Math.abs(enteredAmount - currentLowestBid);
-                    let signedRatio = (enteredAmount - currentLowestBid) / currentLowestBid;
+                    const signedRatio = (enteredAmount - currentLowestBid) / currentLowestBid;
 
-                    if (signedRatio == Infinity || signedRatio == -Infinity) {
-                        signedRatio = 0.00;
-                    }
+                    
                     console.log("Entered Amount:", enteredAmount);
                     console.log("Current Lowest Bid:", currentLowestBid);
                     console.log("Absolute Difference:", absDiff);
