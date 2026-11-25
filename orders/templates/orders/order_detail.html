@@ -531,6 +531,7 @@
 
         let currentLowestBid = lowestBidEl ? parsePrice(lowestBidEl.textContent) : NaN;
         if (Number.isNaN(currentLowestBid)) currentLowestBid = initialPrice;
+        if (currentLowestBid === 0) currentLowestBid = initialPrice;
 
         let currentCurrency = "{{ order.tender_currency|default:'руб.' }}";
 
